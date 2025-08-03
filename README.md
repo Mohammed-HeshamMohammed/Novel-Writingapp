@@ -1,69 +1,127 @@
-# React + TypeScript + Vite
+# 📝 Novel-Writingapp – Your Offline AI-Powered Writing Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Novel-Writingapp** is a full-featured, offline-first, privacy-respecting desktop app built for novelists, storytellers, and roleplay writers. With a React + Tailwind frontend and FastAPI backend, it lets you structure entire projects, track characters and plot, and optionally leverage AI assistance when you need it — without cloud lock-in.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ⚙️ Core Feature Highlights
 
-## Expanding the ESLint configuration
+### 1. ✏️ Chapter & Scene Management
+- Multi-level chapter → scene hierarchy
+- Reorder with drag-and-drop
+- Collapse/expand for cleaner workflow
+- Label scenes by tone (Romance, Reveal, Tension, etc.)
+- Track word counts per scene and chapter
+- Visual progress indicators
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 2. 🧙‍♀️ Character Management System
+- Full profile: name, age, role, personality, backstory
+- Relationship mapping and appearance tracking
+- Link characters to scenes/chapters
+- View chapters by character presence
+- Filter: “Show chapters without this character”
+- Built-in search
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 3. 🧾 Story Metadata & Tags
+- Project-level metadata: title, genre, author, theme
+- Word count goals per chapter & overall
+- Series title and status tracking (Draft, Editing, Final)
+- Last modified timestamps
+- Custom tags
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### 4. 🌍 Worldbuilding Notes System
+- Create notes for locations, factions, magic, tech, etc.
+- Rich text support: lists, bold, links, code blocks
+- Tag with icons or colors
+- Link to chapters and characters
+- Full-text search
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 5. 🎯 Goal Tracking & Writing Stats
+- Set daily and weekly writing goals (word/time-based)
+- Track progress per session and scene
+- Session history log
+- Visual progress bars
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 6. 🧱 Draft History & Versioning
+- Auto-save on every change
+- View or restore past versions
+- Tag versions (e.g. First Draft, Pre-Edit)
+- Full rollback support
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 7. 🎭 Plot & Story Arc Tools
+- Add plot points (inciting incident, climax, etc.)
+- Organize by arc (Main plot, Subplot A/B/C)
+- Timeline view
+- Scene-arc mapping
+- Chapter coverage insights
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 8. 🧩 Outline & Index Card View
+- Story outline view: chapter, scene, synopsis
+- Index cards: freeform drag-and-drop
+- Printable/exportable outlines
+
+### 9. 🗂 Project Dashboard
+- List view of all stories
+- Filter by status, genre, last edited
+- Add cover images to each project
+- Quick access to recent projects
+
+### 10. 📤 Export-Ready Manuscript Tools
+- Export full or partial manuscripts as `.txt`, `.pdf`, or `.epub`
+- Custom export settings: include/exclude metadata
+- Formatting options: font, spacing, chapter breaks
+- Auto-generated title page
+
+---
+
+## 📊 Functional Feature Breakdown
+
+The chart below illustrates the number of internal features per core writing module:
+## 📊 Functional Feature Breakdown
+
+| Module                    | Feature Count | Visual Representation      |
+|---------------------------|---------------|----------------------------|
+| Chapter & Scene Manager   | 6             | ██████                    |
+| Character Management      | 6             | ██████                    |
+| Story Metadata            | 5             | █████                     |
+| Worldbuilding Notes       | 4             | ████                      |
+| Writing Stats             | 4             | ████                      |
+| Draft History             | 4             | ████                      |
+| Plot & Arc Tools          | 4             | ████                      |
+| Outline & Index View      | 3             | ███                       |
+| Project Dashboard         | 4             | ████                      |
+| Export Tools              | 4             | ████                      |
+
+> Based on `Plan.txt` priorities. Text-based bars are approximate visual indicators.
+
+---
+
+## 🧠 Optional AI Assistance
+
+Use AI only when you need it:
+- Trigger dialogue suggestions, rewriting, or plot ideas manually
+- Token-efficient prompt structure
+- Scoped memory per chapter/project
+- Roleplay-compatible AI behavior
+
+---
+
+## 🛠 Tech Stack
+
+| Layer       | Tech                             |
+|-------------|----------------------------------|
+| Frontend    | React.js + TailwindCSS + Vite    |
+| Desktop     | Electron.js                      |
+| Backend     | FastAPI (Python)                 |
+| Storage     | Local filesystem                 |
+| AI Engine   | Token-managed LLM (manual trigger) |
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Mohammed-HeshamMohammed/Novel-Writingapp.git
+cd Novel-Writingapp
