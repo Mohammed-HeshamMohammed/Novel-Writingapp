@@ -78,9 +78,20 @@
 
 The chart below illustrates the number of internal features per core writing module:
 
-![Feature Breakdown Graph](feature_breakdown_bar.png)
+| Module                    | Feature Count | Visual Representation      |
+|---------------------------|---------------|----------------------------|
+| Chapter & Scene Manager   | 6             | ██████                    |
+| Character Management      | 6             | ██████                    |
+| Story Metadata            | 5             | █████                     |
+| Worldbuilding Notes       | 4             | ████                      |
+| Writing Stats             | 4             | ████                      |
+| Draft History             | 4             | ████                      |
+| Plot & Arc Tools          | 4             | ████                      |
+| Outline & Index View      | 3             | ███                       |
+| Project Dashboard         | 4             | ████                      |
+| Export Tools              | 4             | ████                      |
 
-*Modules like Character Management and Chapter Tools are the most feature-rich.*
+> Based on `Plan.txt` priorities. Text-based bars are approximate visual indicators.
 
 ---
 
