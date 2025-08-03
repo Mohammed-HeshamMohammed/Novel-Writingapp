@@ -1,0 +1,170 @@
+.container-btn-pixel-art {
+  --time-ms: 300ms;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  gap: 6rem;
+}
+
+.button {
+  display: flex;
+  width: 200px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--time-ms) ease;
+}
+
+.link {
+  position: absolute;
+  bottom: 40%;
+  left: 50%;
+  width: 100px;
+  transform: translate(-50%, 0);
+  transition: all var(--time-ms) ease;
+  pointer-events: none;
+}
+
+.input {
+  display: none;
+
+  &:checked ~ .link .link-pj-svg {
+    display: none;
+  }
+
+  &:checked ~ .text {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  &:checked ~ .light-up {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  &:not(:checked) ~ .link .link-sword-pj-svg {
+    display: none;
+  }
+
+  &:active ~ .button .button-start {
+    transform: translateY(3px);
+  }
+
+  &:active ~ .link {
+    transform: translate(-50%, 20px);
+  }
+
+  &:checked ~ .button .button-start {
+    transform: translateY(2px);
+  }
+
+  &:checked:active ~ .button .button-start {
+    transform: translateY(3px);
+  }
+}
+
+.button-start {
+  transition: all var(--time-ms) ease;
+}
+
+.link-pj-svg .group {
+  opacity: 0;
+  animation: toggleVisibility 2s infinite steps(1, end);
+}
+
+.link-pj-svg .group.group-1 {
+  animation-delay: 0s;
+}
+
+.link-pj-svg .group.group-2 {
+  animation-delay: 1s;
+}
+
+.text {
+  /* position: absolute;
+  bottom: 180%; */
+  width: 160px;
+  color: #ff0000;
+  animation: opacity-text 2s infinite steps(1, end);
+  filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 1px #ffffff)
+    drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 1px #ffffff)
+    drop-shadow(0 0 8px #ff0000);
+  pointer-events: none;
+
+  & .pixels {
+    animation: text-color 4s calc(var(--delay) * 0.025s) infinite;
+  }
+}
+
+.light-up {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  filter: blur(10px);
+  transform: scale(1.5);
+  pointer-events: none;
+  transition: all var(--time-ms);
+
+  & span {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    clip-path: polygon(
+      0% 0%,
+      0% 100%,
+      37% 100%,
+      45% 0,
+      55% 0,
+      60% 60%,
+      40% 60%,
+      37% 100%,
+      100% 100%,
+      100% 0%
+    );
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+@keyframes toggleVisibility {
+  0% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes show-link-sword {
+  0% {
+    transform: translate(-50%, 0);
+  }
+
+  50% {
+    transform: translate(-50%, 10%);
+  }
+}
+
+@keyframes text-color {
+  3% {
+    color: #ffd1d1;
+  }
+
+  15% {
+    color: #ff0000;
+  }
+}
+
+@keyframes opacity-text {
+  50%,
+  100% {
+    opacity: 0.1;
+    filter: none;
+  }
+}
