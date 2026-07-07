@@ -5,6 +5,7 @@ import { TooltipButton } from '../shared/TooltipButton';
 import { SettingsIcon } from '../shared/SettingsIcon';
 import { getThemeStyles } from '../utils/themeUtils';
 import { SettingsPopup } from '../../editor/SettingsPopup';
+import { EditorMobileBottomNav } from './EditorMobileBottomNav';
 import type { WritingMode, Theme } from '../../../shared/types/story';
 
 interface EditorNavBarProps {
@@ -92,19 +93,30 @@ export const EditorNavBar: React.FC<EditorNavBarProps> = ({
 
   return (
     <>
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+      `}</style>
       <nav className={`${styles.nav} border-b shadow-lg relative z-[9998]`}>
-        <div className="flex items-center justify-between h-16 px-6 relative">
-          <div className="flex items-center space-x-4" style={{ paddingLeft: `${leftSectionOffset}px` }}>
+        <div className="flex items-center justify-between h-14 md:h-16 px-3 md:px-6 relative gap-2">
+          <div
+            className="flex items-center gap-2 md:space-x-4 min-w-0"
+            style={{ paddingLeft: `${leftSectionOffset}px` }}
+          >
             <TooltipButton
               tooltip="Go Back"
               onClick={() => handleAction(onBack)}
-              className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${styles.button}`}
+              className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 flex-shrink-0 ${styles.button}`}
               theme={theme}
             >
               <ArrowLeft className="w-5 h-5" />
             </TooltipButton>
-            
-            <div className="flex items-center space-x-2">
+
+            <div className={`flex items-center gap-1.5 px-2 py-1 md:hidden ${styles.statusBg} rounded-lg flex-shrink-0`}>
+              <div className={`w-2 h-2 rounded-full ${saveStatusInfo.color}`}></div>
+            </div>
+
+            <div className="hidden md:flex items-center space-x-2">
               {modes.map((mode) => (
                 <TooltipButton
                   key={mode.key}
@@ -123,14 +135,14 @@ export const EditorNavBar: React.FC<EditorNavBarProps> = ({
             </div>
           </div>
 
-          <div className="absolute left-1/2 transform -translate-x-1/2">
+          <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
             <div className={`flex items-center space-x-2 px-3 py-1.5 ${styles.statusBg} rounded-lg`}>
               <div className={`w-2 h-2 rounded-full ${saveStatusInfo.color}`}></div>
               <span className={`text-sm ${styles.textSecondary} capitalize`}>{saveStatusInfo.status}</span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3" style={{ paddingRight: `${rightSectionOffset}px` }}>
+          <div className="hidden md:flex items-center space-x-3" style={{ paddingRight: `${rightSectionOffset}px` }}>
             <TooltipButton
               tooltip="Import Story"
               onClick={() => handleAction(onImport)}
@@ -140,7 +152,7 @@ export const EditorNavBar: React.FC<EditorNavBarProps> = ({
             >
               <Upload className="w-4 h-4" />
             </TooltipButton>
-            
+
             <TooltipButton
               tooltip="Export Story"
               onClick={() => handleAction(onExport)}
@@ -150,7 +162,7 @@ export const EditorNavBar: React.FC<EditorNavBarProps> = ({
             >
               <Download className="w-4 h-4" />
             </TooltipButton>
-            
+
             <TooltipButton
               tooltip="Save Story"
               onClick={() => handleAction(onSave)}
@@ -162,7 +174,7 @@ export const EditorNavBar: React.FC<EditorNavBarProps> = ({
             </TooltipButton>
 
             <div className={`w-px h-6 ${styles.divider}`} />
-            
+
             <TooltipButton
               tooltip="Settings configuration"
               onClick={() => setShowSettings(true)}
@@ -174,19 +186,59 @@ export const EditorNavBar: React.FC<EditorNavBarProps> = ({
           </div>
 
           {onThemeChange && (
-            <div 
-              className="absolute top-1/2 transform -translate-y-1/2"
-              style={{ right: `${editorThemeTogglePosition}px` }}
-            >
-              <ThemeSwitch 
-                theme={theme} 
-                onThemeChange={handleThemeChange}
-                debounceMs={themeToggleDebounceMs}
-              />
-            </div>
+            <>
+              <div
+                className="hidden md:block md:absolute md:top-1/2 md:transform md:-translate-y-1/2"
+                style={{ right: `${editorThemeTogglePosition}px` }}
+              >
+                <ThemeSwitch
+                  theme={theme}
+                  onThemeChange={handleThemeChange}
+                  debounceMs={themeToggleDebounceMs}
+                />
+              </div>
+              <div className="md:hidden flex-shrink-0">
+                <ThemeSwitch
+                  theme={theme}
+                  onThemeChange={handleThemeChange}
+                  debounceMs={themeToggleDebounceMs}
+                />
+              </div>
+            </>
           )}
         </div>
+
+        <div className="md:hidden overflow-x-auto scrollbar-hide px-3 pb-2">
+          <div className="flex gap-2 min-w-max">
+            {modes.map((mode) => (
+              <TooltipButton
+                key={mode.key}
+                tooltip={`Switch to ${mode.label} mode`}
+                onClick={() => handleModeChange(mode.key)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-all duration-200 ${
+                  writingMode === mode.key
+                    ? styles.buttonActive
+                    : `${styles.textSecondary} ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`
+                }`}
+                theme={theme}
+              >
+                {mode.label}
+              </TooltipButton>
+            ))}
+          </div>
+        </div>
       </nav>
+
+      <EditorMobileBottomNav
+        theme={theme}
+        onImport={() => handleAction(onImport)}
+        onExport={() => handleAction(onExport)}
+        onSave={() => handleAction(onSave)}
+        onSettings={() => setShowSettings(true)}
+        isSaving={isSaving}
+        isExporting={isExporting}
+        isImporting={isImporting}
+      />
 
       {onSidebarTabsChange && (
         <SettingsPopup

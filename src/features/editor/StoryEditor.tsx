@@ -241,7 +241,7 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
   const isDark = theme === 'dark';
 
   return (
-    <div className={`h-screen ${themeStyles} flex flex-col overflow-hidden`}>
+    <div className={`h-screen ${themeStyles} flex flex-col overflow-hidden pb-16 md:pb-0`}>
       <NavigationBar
         mode="editor"
         onBack={onBack}

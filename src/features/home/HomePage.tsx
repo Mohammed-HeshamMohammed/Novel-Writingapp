@@ -252,7 +252,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       )}
 
-      <main className={`w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-4 sm:py-8 ${contentSpacing}`}>
+      <main className={`w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-4 sm:py-8 pb-24 md:pb-8 ${contentSpacing}`}>
         <div className={`flex flex-col sm:flex-row items-stretch sm:items-start ${genreFilterSpacing} mb-2`}>
           <div className="flex min-w-0 flex-1 sm:max-w-4xl">
             <GenreNavBar

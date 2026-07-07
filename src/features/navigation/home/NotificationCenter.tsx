@@ -17,7 +17,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   onNotificationClick,
   onMarkAllRead,
   onClearAll,
-  onSettingsClick
+  onSettingsClick,
+  openUpward = false
 }) => {
   const [isPressed, setIsPressed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -74,7 +75,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   }, [onSettingsClick]);
 
   return (
-    <StyledWrapper theme={theme} isOpen={isOpen}>
+    <StyledWrapper theme={theme} isOpen={isOpen} openUpward={openUpward}>
       <div className="notifications-container">
         <div 
           ref={buttonRef}

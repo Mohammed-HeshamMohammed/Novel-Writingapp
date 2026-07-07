@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { ThemeSwitch } from '../shared/ThemeSwitch';
 import { TooltipButton } from '../shared/TooltipButton';
 import { getThemeStyles } from '../utils/themeUtils';
 import { NewStoryModal } from './NewStoryModal';
 import UpdatedUserProfileDropdown from './UserProfileDropdown';
 import NotificationsDropdown from './NotificationCenter';
+import { MobileBottomNav } from './MobileBottomNav';
 import type { Theme } from '../../../shared/types/story';
 
 interface HomeNavBarProps {
@@ -123,7 +124,7 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
               <h1 className={`text-lg font-bold ${styles.text} sm:hidden`}>N</h1>
             </div>
 
-            <div className="hidden sm:block flex-1 max-w-sm mx-4">
+            <div className="hidden md:block flex-1 max-w-sm mx-4">
               <div className="relative">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${styles.textSecondary} w-4 h-4`} />
                 <input
@@ -136,44 +137,37 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowMobileSearch(prev => !prev)}
-              className={`sm:hidden flex-shrink-0 p-2 rounded-full transition-colors duration-200 ${styles.textSecondary} hover:bg-black/5 dark:hover:bg-white/10`}
-              aria-label={showMobileSearch ? 'Close search' : 'Search stories'}
-            >
-              {showMobileSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
-            </button>
-
-            <div className="flex items-center space-x-1 sm:space-x-2">
+            <div className="flex items-center space-x-1 md:space-x-2">
               <TooltipButton
                 tooltip="Create New Story"
                 onClick={handleNewStoryClick}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium border border-transparent rounded-full text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="hidden md:inline-flex items-center px-3 py-1.5 text-sm font-medium border border-transparent rounded-full text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 theme={theme}
               >
-                <svg className="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span className="hidden sm:inline">New Story</span>
+                <span>New Story</span>
               </TooltipButton>
 
               {onThemeChange && (
-                <ThemeSwitch 
-                  theme={theme} 
+                <ThemeSwitch
+                  theme={theme}
                   onThemeChange={handleThemeChange}
                   debounceMs={themeToggleDebounceMs}
                 />
               )}
 
-              <NotificationsDropdown
-                theme={theme}
-                notifications={notifications}
-                onNotificationClick={(id: string) => handleAction(() => onNotificationClick?.(id))}
-                onMarkAllRead={() => handleAction(onMarkAllNotificationsRead)}
-                onClearAll={() => handleAction(onClearAllNotifications)}
-                onSettingsClick={() => handleAction(onNotificationSettingsClick)}
-              />
+              <div className="hidden md:block">
+                <NotificationsDropdown
+                  theme={theme}
+                  notifications={notifications}
+                  onNotificationClick={(id: string) => handleAction(() => onNotificationClick?.(id))}
+                  onMarkAllRead={() => handleAction(onMarkAllNotificationsRead)}
+                  onClearAll={() => handleAction(onClearAllNotifications)}
+                  onSettingsClick={() => handleAction(onNotificationSettingsClick)}
+                />
+              </div>
 
               <UpdatedUserProfileDropdown
                 theme={theme}
@@ -198,7 +192,7 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
           </div>
 
           {showMobileSearch && (
-            <div className="sm:hidden pb-3">
+            <div className="md:hidden pb-3">
               <div className="relative">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${styles.textSecondary} w-4 h-4`} />
                 <input
@@ -216,6 +210,18 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
       </nav>
 
       <div className="h-20"></div>
+
+      <MobileBottomNav
+        theme={theme}
+        showMobileSearch={showMobileSearch}
+        onToggleSearch={() => setShowMobileSearch(prev => !prev)}
+        onNewStoryClick={handleNewStoryClick}
+        notifications={notifications}
+        onNotificationClick={(id: string) => handleAction(() => onNotificationClick?.(id))}
+        onMarkAllNotificationsRead={() => handleAction(onMarkAllNotificationsRead)}
+        onClearAllNotifications={() => handleAction(onClearAllNotifications)}
+        onNotificationSettingsClick={() => handleAction(onNotificationSettingsClick)}
+      />
 
       {showNewStoryModal && (
         <NewStoryModal

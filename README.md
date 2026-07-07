@@ -101,8 +101,34 @@ See `backend/README.md` for endpoint details and what's still a stub
 `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (see
 `.env.example`). Copy real values into a local `.env.local` (gitignored,
 never committed). If unset, `supabase` is exported as `null` and
-`isSupabaseConfigured` is `false` — nothing else in the app depends on it
-yet, so it's opt-in wiring rather than a hard requirement.
+`isSupabaseConfigured` is `false`, and `src/shared/utils/storage.ts` falls
+back to `localStorage` — the app works fully offline either way.
+
+When Supabase *is* configured, `storage.ts` reads/writes stories to a
+`stories` table instead of `localStorage`. That table doesn't exist until
+you run the migration: open the Supabase SQL Editor for your project and
+run `supabase/migrations/0001_stories.sql`.
+
+**Before you do, read the warning at the top of that file.** There's no
+authentication in this app yet, so the migration's RLS policies allow
+anyone with the publishable key (i.e. anyone who loads the deployed site)
+to read and write every row in that table — it's a shared/public table,
+not per-user private storage. That's fine for a demo or a single-user
+deployment you control; if you need real privacy per visitor, add
+Supabase Auth and scope the policies to `auth.uid()` first.
+
+## Mobile & tablet navigation
+
+Below the `md` breakpoint (768px), both the home dashboard and the editor
+switch from a single top nav to a top nav + fixed bottom nav pair, so the
+primary actions (search, create, notifications on home; import/export/save
+on the editor) sit in thumb reach instead of a crowded top bar:
+
+- `features/navigation/home/MobileBottomNav.tsx` — Home / Search / Create / Notifications
+- `features/navigation/editor/EditorMobileBottomNav.tsx` — Import / Export / Save / Settings
+
+The writing-mode selector in the editor becomes a horizontal scroll row on
+mobile instead of disappearing. Desktop (`md:` and up) is unchanged.
 
 ## Deploying to Netlify
 
@@ -132,6 +158,11 @@ Vite only inlines `VITE_`-prefixed variables that are present at build time.
 - The backend's story store is in-memory (resets on restart) and EPUB
   import isn't implemented yet — both are called out with comments/errors
   at the relevant code, not silently faked.
+- The Supabase `stories` table has no per-user privacy (see the Supabase
+  section above) — there's no auth yet, so it's a shared table.
 - `npm run lint` reports a number of pre-existing `no-explicit-any`
   warnings in the sidebar and navigation components; worth tightening up
   incrementally rather than in one large pass.
+- The profile menu isn't duplicated into the mobile bottom nav (it stays
+  in the top nav on every breakpoint) — only search/create/notifications
+  moved down, to keep the bottom nav to 4 items.

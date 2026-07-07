@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const StyledWrapper = styled.div<{ theme: 'light' | 'dark'; isOpen: boolean }>`
+export const StyledWrapper = styled.div<{ theme: 'light' | 'dark'; isOpen: boolean; openUpward?: boolean }>`
   .notifications-container {
     position: relative;
   }
@@ -82,19 +82,19 @@ export const StyledWrapper = styled.div<{ theme: 'light' | 'dark'; isOpen: boole
 
   .popup-main {
     position: absolute;
-    top: 100%;
+    ${props => props.openUpward ? 'bottom: 100%;' : 'top: 100%;'}
     right: -8px;
     opacity: 0;
-    margin-top: 8px;
+    ${props => props.openUpward ? 'margin-bottom: 8px;' : 'margin-top: 8px;'}
     border-radius: 16px;
     width: min(380px, calc(100vw - 2rem));
     max-height: 520px;
-    background: ${props => props.theme === 'dark' 
-      ? 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)' 
+    background: ${props => props.theme === 'dark'
+      ? 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)'
       : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)'};
     backdrop-filter: blur(20px);
-    border: 1px solid ${props => props.theme === 'dark' 
-      ? 'rgba(148, 163, 184, 0.1)' 
+    border: 1px solid ${props => props.theme === 'dark'
+      ? 'rgba(148, 163, 184, 0.1)'
       : 'rgba(148, 163, 184, 0.2)'};
     box-shadow: ${props => props.theme === 'dark'
       ? '0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
@@ -103,20 +103,11 @@ export const StyledWrapper = styled.div<{ theme: 'light' | 'dark'; isOpen: boole
     overflow: hidden;
     z-index: 1000;
     pointer-events: none;
-    transform: translateY(-10px) scale(0.95);
-
-    @media (max-width: 639px) {
-      position: fixed;
-      top: 76px;
-      left: 1rem;
-      right: 1rem;
-      width: auto;
-      margin-top: 0;
-    }
+    transform: ${props => props.openUpward ? 'translateY(10px) scale(0.95)' : 'translateY(-10px) scale(0.95)'};
   }
 
   .popup-main.open {
-    margin-top: 12px;
+    ${props => props.openUpward ? 'margin-bottom: 12px;' : 'margin-top: 12px;'}
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0) scale(1);

@@ -32,9 +32,9 @@ function App() {
     }
   };
 
-  const loadStories = () => {
+  const loadStories = async () => {
     try {
-      setStories(getAllStoryMetadata());
+      setStories(await getAllStoryMetadata());
     } catch (error) {
       console.error('Failed to load stories:', error);
       setStories([]);
@@ -53,9 +53,9 @@ function App() {
     }
   };
 
-  const handleOpenStory = (id: string) => {
+  const handleOpenStory = async (id: string) => {
     try {
-      const story = loadStory(id);
+      const story = await loadStory(id);
       if (story) {
         setCurrentStory(story);
         setAppState('editor');
@@ -65,30 +65,30 @@ function App() {
     }
   };
 
-  const handleDeleteStory = (id: string) => {
+  const handleDeleteStory = async (id: string) => {
     try {
-      deleteStory(id);
-      loadStories();
+      await deleteStory(id);
+      await loadStories();
     } catch (error) {
       console.error('Failed to delete story:', error);
     }
   };
 
-  const handleBookmarkStory = (id: string) => {
+  const handleBookmarkStory = async (id: string) => {
     try {
-      toggleBookmark(id);
-      loadStories();
+      await toggleBookmark(id);
+      await loadStories();
     } catch (error) {
       console.error('Failed to bookmark story:', error);
     }
   };
 
-  const handleStoryUpdate = (story: Story) => {
+  const handleStoryUpdate = async (story: Story) => {
     try {
       const updatedStory = updateStoryWordCount(story);
       setCurrentStory(updatedStory);
-      saveStory(updatedStory);
-      loadStories();
+      await saveStory(updatedStory);
+      await loadStories();
     } catch (error) {
       console.error('Failed to update story:', error);
     }

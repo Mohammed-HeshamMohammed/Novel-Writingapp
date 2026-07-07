@@ -141,6 +141,7 @@ export interface NotificationCenterProps {
   onMarkAllRead?: () => void;
   onClearAll?: () => void;
   onSettingsClick?: () => void;
+  openUpward?: boolean;
 }
 
 export interface UserProfileDropdownProps {
