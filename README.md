@@ -3,7 +3,7 @@
 An offline-first writing app for organizing novels: chapters, characters,
 locations, and a timeline, all editable from a single dashboard. Built as a
 web app (deployable to Netlify) that can also run as a desktop app via
-Electron, with an optional FastAPI backend for save/import/export.
+Tauri, with an optional FastAPI backend for save/import/export.
 
 ## Project structure
 
@@ -28,18 +28,21 @@ Novel-Writingapp/
 │       ├── main.py           App entrypoint, CORS, router wiring
 │       ├── core/config.py    Settings
 │       └── api/routes/       Route modules
-├── desktop/                  Electron shell that wraps the built web app
-│   ├── main.cjs
-│   └── package.json          Separate deps so the web build stays lean
+├── src-tauri/                 Tauri desktop shell (Rust) that wraps the built web app
+│   ├── src/                   Rust entrypoint (lib.rs, main.rs)
+│   ├── tauri.conf.json        Window config, dev/build commands, bundle targets
+│   └── Cargo.toml
 ├── public/
 ├── netlify.toml               Netlify build config
 └── package.json               Frontend deps + scripts (this is what Netlify builds)
 ```
 
 The guiding rule: **the root `package.json` only contains what the deployed
-web app needs.** Electron and its dependencies live in `desktop/` so that
-`npm install` at the repo root — which is what Netlify runs — never has to
-touch Electron's (large, platform-specific) binary download.
+web app needs.** The desktop shell's Rust toolchain and dependencies live
+entirely under `src-tauri/` (its own `Cargo.toml`), so `npm install` at the
+repo root — which is what Netlify runs — never has to touch anything
+desktop-related. `@tauri-apps/cli` is a small dev dependency at the root
+purely to drive `npm run tauri ...`; it doesn't pull in Rust itself.
 
 ## Getting started
 
@@ -53,15 +56,26 @@ npm run dev        # http://localhost:5173
 Other scripts: `npm run build` (type-check + production build to `dist/`),
 `npm run preview` (serve the production build locally), `npm run lint`.
 
-### Desktop app (Electron)
+### Desktop app (Tauri)
+
+Requires the Rust toolchain ([rustup.rs](https://rustup.rs)) plus the OS
+webview dependencies for your platform (see the
+[Tauri prerequisites guide](https://v2.tauri.app/start/prerequisites/) —
+on Linux that's `webkit2gtk`, `gtk3`, etc.).
 
 ```bash
-npm --prefix desktop install
-npm run desktop     # starts the Vite dev server and an Electron window together
+npm install
+npm run tauri dev     # starts the Vite dev server and a native window together
 ```
 
-For a packaged build, run `npm run build` at the repo root first (so
-`dist/` exists), then `npm --prefix desktop run electron`.
+For a distributable build (installer/AppImage/etc.):
+
+```bash
+npm run tauri build
+```
+
+This runs `npm run build` first (per `beforeBuildCommand` in
+`tauri.conf.json`) and bundles `dist/` into the native app.
 
 ### Backend (optional, for save/import/export)
 
@@ -97,7 +111,7 @@ variable so the deployed frontend can reach it.
 | Layer    | Tech                                   |
 |----------|-----------------------------------------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS |
-| Desktop  | Electron                                |
+| Desktop  | Tauri (Rust + OS-native webview)         |
 | Backend  | FastAPI (Python)                        |
 | Storage  | `localStorage` (offline-first); backend persistence is a stub — swap for a real database when you need it |
 

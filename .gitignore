@@ -4,7 +4,10 @@ node_modules/
 # Build output
 dist/
 dist-ssr/
-desktop/dist/
+
+# Tauri (desktop shell)
+src-tauri/target/
+src-tauri/gen/schemas/
 
 # Environment variables
 .env
