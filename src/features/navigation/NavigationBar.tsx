@@ -29,6 +29,8 @@ interface NavigationBarProps {
   themeToggleDebounceMs?: number;
   userName?: string;
   userAvatar?: string;
+  userPlan?: 'free' | 'premium' | 'pro';
+  userStatus?: 'online' | 'idle' | 'dnd' | 'invisible';
   notifications?: Array<{
     id: string;
     type: 'comment' | 'like' | 'follow' | 'story' | 'system';
@@ -96,6 +98,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
         onNewStory={props.onNewStory}
         userName={props.userName}
         userAvatar={props.userAvatar}
+        userPlan={props.userPlan}
+        userStatus={props.userStatus}
         notifications={props.notifications}
         onNotificationClick={props.onNotificationClick}
         onMarkAllNotificationsRead={props.onMarkAllNotificationsRead}

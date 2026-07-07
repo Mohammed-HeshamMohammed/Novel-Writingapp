@@ -8,7 +8,7 @@ relying on it for anything persistent.
 ## Setup
 
 ```bash
-cd backend
+cd desktop/backend
 python3 -m venv .venv
 source .venv/bin/activate   # .venv\Scripts\activate on Windows
 pip install -r requirements.txt
@@ -22,7 +22,7 @@ at `http://localhost:8000/docs`.
 ## Layout
 
 ```
-backend/
+desktop/backend/
   app/
     main.py            FastAPI app, CORS, router wiring
     core/config.py     Settings (env-driven via pydantic-settings)

@@ -6,8 +6,8 @@ dist/
 dist-ssr/
 
 # Tauri (desktop shell)
-src-tauri/target/
-src-tauri/gen/schemas/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/schemas/
 
 # Environment variables
 .env
@@ -33,8 +33,12 @@ yarn-error.log*
 .netlify/
 
 # Python (backend)
-backend/__pycache__/
-backend/**/__pycache__/
-backend/.venv/
-backend/venv/
-backend/*.egg-info/
+desktop/backend/__pycache__/
+desktop/backend/**/__pycache__/
+desktop/backend/.venv/
+desktop/backend/venv/
+desktop/backend/*.egg-info/
+
+# Local tool configurations
+.local/
+

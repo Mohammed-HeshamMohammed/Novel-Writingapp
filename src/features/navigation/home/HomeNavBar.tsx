@@ -35,6 +35,8 @@ interface HomeNavBarProps {
   theme: Theme;
   userName?: string;
   userAvatar?: string;
+  userPlan?: 'free' | 'premium' | 'pro';
+  userStatus?: 'online' | 'idle' | 'dnd' | 'invisible';
   notifications?: Array<{
     id: string;
     type: 'comment' | 'like' | 'follow' | 'story' | 'system' | 'unlike' | 'unfollow' | 'loved';
@@ -72,6 +74,8 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
   theme,
   userName,
   userAvatar,
+  userPlan,
+  userStatus,
   notifications,
   themeToggleDebounceMs = 300,
 }) => {
@@ -173,6 +177,8 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
                 theme={theme}
                 userName={userName}
                 userAvatar={userAvatar}
+                userPlan={userPlan}
+                currentStatus={userStatus}
                 onProfileClick={() => handleAction(onProfileClick)}
                 onEditProfileClick={() => handleAction(onEditProfileClick)}
                 onAddMemberClick={() => handleAction(onAddMemberClick)}
