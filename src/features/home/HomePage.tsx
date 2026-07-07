@@ -28,6 +28,8 @@ interface HomePageProps {
   navbarSpacing?: string;
   contentSpacing?: string;
   filterPosition?: FilterPosition;
+  userEmail?: string;
+  onLogout?: () => void;
 }
 
 const themeStyles = {
@@ -62,7 +64,9 @@ export const HomePage: React.FC<HomePageProps> = ({
   genreFilterSpacing = 'gap-3 sm:gap-4',
   navbarSpacing = 'mb-2',
   contentSpacing = 'pt-2',
-  filterPosition = {}
+  filterPosition = {},
+  userEmail,
+  onLogout
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState<string>('updated');
@@ -240,6 +244,8 @@ export const HomePage: React.FC<HomePageProps> = ({
           onNewStory={handleNewStory}
           onThemeChange={onThemeChange}
           theme={theme}
+          userName={userEmail}
+          onLogoutClick={onLogout}
         />
       </div>
 

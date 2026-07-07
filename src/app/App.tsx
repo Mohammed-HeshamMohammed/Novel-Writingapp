@@ -3,13 +3,17 @@ import type { Story, StoryMetadata, Theme } from '../shared/types/story';
 import { HomePage } from '../features/home/HomePage';
 import { StoryEditor } from '../features/editor/StoryEditor';
 import { ThemeProvider } from './providers/ThemeContext';
+import { AuthProvider, useAuth } from '../features/auth/AuthContext';
+import { LoginPage } from '../features/auth/LoginPage';
+import { isSupabaseConfigured } from '../shared/services/supabase';
 import { createNewStory, updateStoryWordCount } from '../shared/utils/storyUtils';
 import { saveStory, loadStory, deleteStory, getAllStoryMetadata, toggleBookmark } from '../shared/utils/storage';
 import { getStoredTheme, storeTheme } from '../features/navigation/utils/themeUtils';
 
 type AppState = 'home' | 'editor';
 
-function App() {
+function AppContent() {
+  const { user, loading: authLoading, signOut } = useAuth();
   const [appState, setAppState] = useState<AppState>('home');
   const [currentStory, setCurrentStory] = useState<Story | null>(null);
   const [stories, setStories] = useState<StoryMetadata[]>([]);
@@ -103,34 +107,72 @@ function App() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setAppState('home');
+      setCurrentStory(null);
+      setStories([]);
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+    }
+  };
+
   useEffect(() => {
+    if (isSupabaseConfigured && !user) {
+      setStories([]);
+      return;
+    }
     loadStories();
-  }, []);
+  }, [user]);
+
+  if (isSupabaseConfigured) {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+    }
+    if (!user) {
+      return <LoginPage theme={theme} />;
+    }
+  }
 
   return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      {appState === 'editor' && currentStory ? (
+        <StoryEditor
+          story={currentStory}
+          onStoryUpdate={handleStoryUpdate}
+          onBack={handleBackToHome}
+          theme={theme}
+          onThemeChange={handleThemeChange}
+        />
+      ) : (
+        <HomePage
+          stories={stories}
+          onNewStory={handleNewStory}
+          onOpenStory={handleOpenStory}
+          onDeleteStory={handleDeleteStory}
+          onBookmarkStory={handleBookmarkStory}
+          theme={theme}
+          onThemeChange={handleThemeChange}
+          filterPosition={{ top: 10, right: 15 }}
+          userEmail={user?.email}
+          onLogout={isSupabaseConfigured ? handleLogout : undefined}
+        />
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return (
     <ThemeProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-        {appState === 'editor' && currentStory ? (
-          <StoryEditor
-            story={currentStory}
-            onStoryUpdate={handleStoryUpdate}
-            onBack={handleBackToHome}
-            theme={theme}
-            onThemeChange={handleThemeChange}
-          />
-        ) : (
-          <HomePage
-            stories={stories}
-            onNewStory={handleNewStory}
-            onOpenStory={handleOpenStory}
-            onDeleteStory={handleDeleteStory}
-            onBookmarkStory={handleBookmarkStory}
-            theme={theme}
-            onThemeChange={handleThemeChange}
-            filterPosition={{ top: 10, right: 15}}
-          />
-          )}
-      </div>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -12,9 +12,10 @@ Novel-Writingapp/
 ├── src/                      Frontend (React + TypeScript + Vite + Tailwind)
 │   ├── app/                  App shell: root component, theme provider
 │   ├── features/             One folder per feature area
+│   │   ├── auth/             Supabase-backed login/signup (email + Google)
 │   │   ├── home/             Story dashboard, filters, story cards
 │   │   ├── editor/           Chapter editor, story editor, settings popup
-│   │   ├── navigation/       Top nav bars, notifications, user dropdown
+│   │   ├── navigation/       Top/bottom nav bars, notifications, user dropdown
 │   │   ├── sidebar-left/     Chapters/characters/locations/timeline panel
 │   │   ├── sidebar-right/    Writing suggestions/analytics/history panel
 │   │   └── fun/              Easter-egg components
@@ -95,27 +96,35 @@ uvicorn app.main:app --reload
 See `backend/README.md` for endpoint details and what's still a stub
 (the in-memory story store, EPUB import).
 
-### Supabase (optional, for a hosted database)
+### Supabase (optional, for a hosted database + accounts)
 
 `src/shared/services/supabase.ts` creates a Supabase client from
 `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (see
 `.env.example`). Copy real values into a local `.env.local` (gitignored,
-never committed). If unset, `supabase` is exported as `null` and
-`isSupabaseConfigured` is `false`, and `src/shared/utils/storage.ts` falls
-back to `localStorage` — the app works fully offline either way.
+never committed). If unset, `isSupabaseConfigured` is `false`, and the app
+skips auth entirely and falls back to `localStorage` — it works fully
+offline either way, no account required.
 
-When Supabase *is* configured, `storage.ts` reads/writes stories to a
-`stories` table instead of `localStorage`. That table doesn't exist until
-you run the migration: open the Supabase SQL Editor for your project and
-run `supabase/migrations/0001_stories.sql`.
+When Supabase **is** configured, two things change:
 
-**Before you do, read the warning at the top of that file.** There's no
-authentication in this app yet, so the migration's RLS policies allow
-anyone with the publishable key (i.e. anyone who loads the deployed site)
-to read and write every row in that table — it's a shared/public table,
-not per-user private storage. That's fine for a demo or a single-user
-deployment you control; if you need real privacy per visitor, add
-Supabase Auth and scope the policies to `auth.uid()` first.
+1. The app gates on sign-in (`src/features/auth/`) — email/password or
+   "Continue with Google", both via Supabase Auth. `App.tsx` shows
+   `LoginPage` until there's a session.
+2. `storage.ts` reads/writes stories to a `stories` table, scoped to the
+   signed-in user, instead of `localStorage`.
+
+That table doesn't exist until you run the migration yourself: open the
+Supabase SQL Editor for your project and run
+`supabase/migrations/0001_stories.sql` (safe to re-run). It creates the
+table and RLS policies scoped to `auth.uid()`, so each account only ever
+sees its own stories.
+
+**Google sign-in needs one more manual step you have to do in the
+Supabase dashboard**: Authentication → Providers → Google, with an OAuth
+client ID/secret from a Google Cloud project (Supabase's docs walk through
+this). The "Continue with Google" button is wired up and will redirect to
+Google correctly once that provider is enabled; until then it'll fail with
+a provider-not-enabled error from Supabase.
 
 ## Mobile & tablet navigation
 
@@ -158,8 +167,12 @@ Vite only inlines `VITE_`-prefixed variables that are present at build time.
 - The backend's story store is in-memory (resets on restart) and EPUB
   import isn't implemented yet — both are called out with comments/errors
   at the relevant code, not silently faked.
-- The Supabase `stories` table has no per-user privacy (see the Supabase
-  section above) — there's no auth yet, so it's a shared table.
+- Google sign-in requires enabling the provider in the Supabase dashboard
+  yourself (see the Supabase section above) — the app-side code is ready,
+  but nothing works until that's configured with real OAuth credentials.
+- There's no password-reset flow yet ("forgot password"), and no email
+  verification gating beyond whatever your Supabase project's auth
+  settings already enforce.
 - `npm run lint` reports a number of pre-existing `no-explicit-any`
   warnings in the sidebar and navigation components; worth tightening up
   incrementally rather than in one large pass.

@@ -38,8 +38,13 @@ const reviveStory = (story: Story): Story => ({
 export const saveStory = async (story: Story): Promise<void> => {
   if (isSupabaseConfigured && supabase) {
     try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!userData.user) throw new Error('No signed-in user to save this story under');
+
       const { error } = await supabase.from(TABLE).upsert({
         id: story.id,
+        user_id: userData.user.id,
         data: story,
         updated_at: new Date(story.updatedAt).toISOString(),
       });
