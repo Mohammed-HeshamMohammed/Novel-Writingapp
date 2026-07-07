@@ -2,14 +2,16 @@ import React, { useState, useMemo, useEffect } from 'react';
 import type { StoryMetadata, ViewMode, Theme, UserPlanType, UserStatus } from '../../shared/types/story';
 import { StoryCard } from './components/StoryCard';
 import { StoryFilters } from './StoryFilters';
-import { GenreNavBar, genres } from './GenreNavBar';
+import { GenreNavBar } from './GenreNavBar';
+import { getGenreLabel } from './data/genres';
+import { queryStories, convertToDisplayStory } from './data/storyQueries';
 import { NavigationBar } from '../navigation/NavigationBar';
 import { CustomizeModal } from './Customizemodal';
 import Notification from '../fun/Gokutextreminder';
 import CustomizeButton from './customize';
 import { Plus } from 'lucide-react';
-import { 
-  ProfileModal, SettingsModal, PricingModal, CharactersModal, CreateCharacterModal, type Character 
+import {
+  ProfileModal, SettingsModal, PricingModal, CharactersModal, CreateCharacterModal, type Character
 } from './components/UserModals';
 
 interface FilterPosition {
@@ -138,92 +140,9 @@ export const HomePage: React.FC<HomePageProps> = ({
     return style;
   };
 
-  const convertToStory = (metadata: StoryMetadata) => ({
-    ...metadata,
-    status: 'draft',
-    thumbnail: metadata.coverImage || '',
-    isFavorited: metadata.isBookmarked || false,
-    summary: metadata.description,
-    rating: 0,
-    readers: `${Math.floor(Math.random() * 1000)} readers`,
-    engagement: `${Math.floor(Math.random() * 100)}% engagement`,
-    lastUpdated: () => metadata.updatedAt.toLocaleDateString(),
-    progress: metadata.readingProgress || 0,
-    chapters: [],
-    characters: [],
-    locations: [],
-    timeline: [],
-    createdAt: new Date(metadata.updatedAt.getTime() - 86400000)
-  });
-
-  const matchesFilter = (story: StoryMetadata, filters: string[]) => {
-    if (filters.includes('all')) return true;
-    const storyTags = story.tags || [];
-    const storyCategory = story.category || '';
-    return filters.some(filter => {
-      switch (filter) {
-        case 'bookmarked': return story.isBookmarked;
-        case 'recent': return Date.now() - story.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000;
-        default: return storyTags.includes(filter) || storyCategory === filter;
-      }
-    });
-  };
-
-  const matchesGenre = (story: StoryMetadata, genre: string) => {
-    const storyTags = (story.tags || []).map(t => t.toLowerCase());
-    const storyCategory = (story.category || '').toLowerCase();
-    const cleanGenre = genre.toLowerCase();
-    
-    switch (cleanGenre) {
-      case 'all': return true;
-      case 'popular': return (story.popularity || 0) > 500;
-      case 'trending': return Date.now() - story.updatedAt.getTime() < 3 * 24 * 60 * 60 * 1000;
-      case 'new': return Date.now() - story.updatedAt.getTime() < 24 * 60 * 60 * 1000;
-      default: {
-        const normGenre = cleanGenre === 'scifi' ? 'sci-fi' : cleanGenre;
-        return storyTags.includes(normGenre) || 
-               storyTags.includes(cleanGenre) || 
-               storyCategory === normGenre || 
-               storyCategory === cleanGenre;
-      }
-    }
-  };
-
-  const sortStories = (stories: StoryMetadata[], sortOption: string) => {
-    return [...stories].sort((a, b) => {
-      switch (sortOption) {
-        case 'title': return a.title.localeCompare(b.title);
-        case 'titleDesc': return b.title.localeCompare(a.title);
-        case 'author': return (a.author || '').localeCompare(b.author || '');
-        case 'wordCount': return (a.wordCount || 0) - (b.wordCount || 0);
-        case 'wordCountDesc': return (b.wordCount || 0) - (a.wordCount || 0);
-        case 'readingTime': return (a.readingTime || 0) - (b.readingTime || 0);
-        case 'readingTimeDesc': return (b.readingTime || 0) - (a.readingTime || 0);
-        case 'popularity': return (b.popularity || 0) - (a.popularity || 0);
-        case 'progress': return (b.readingProgress || 0) - (a.readingProgress || 0);
-        case 'created': return (b.createdAt || b.updatedAt).getTime() - (a.createdAt || a.updatedAt).getTime();
-        case 'updated':
-        default: return b.updatedAt.getTime() - a.updatedAt.getTime();
-      }
-    });
-  };
-
   const filteredAndSortedStories = useMemo(() => {
     try {
-      let filtered = stories;
-      
-      if (searchQuery) {
-        filtered = filtered.filter(story =>
-          story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          story.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          story.author?.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      
-      filtered = filtered.filter(story => matchesGenre(story, selectedGenre));
-      filtered = filtered.filter(story => matchesFilter(story, filterBy));
-      
-      return sortStories(filtered, sortBy);
+      return queryStories(stories, { searchQuery, selectedGenre, filterBy, sortBy });
     } catch (error) {
       console.error('Error filtering stories:', error);
       return stories;
@@ -320,43 +239,39 @@ export const HomePage: React.FC<HomePageProps> = ({
       )}
 
       <main className={`w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-4 sm:py-8 pb-24 md:pb-8 ${contentSpacing}`}>
-        {/* Genre/Category Bar (Full Width) */}
-        <div className="w-full mb-6">
+        {/* Discover panel: genre chips + filter/sort/view toolbar, grouped as one unit */}
+        <div className="w-full mb-6 space-y-3">
           <GenreNavBar
             theme={theme}
             activeGenre={selectedGenre}
             onGenreSelect={handleGenreSelect}
           />
-        </div>
 
-        {/* Filters and Active Category Header Row */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <h2 className={`text-base font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              {selectedGenre === 'all' 
-                ? 'All Stories' 
-                : `${genres.find(g => g.id === selectedGenre)?.label || selectedGenre} Stories`}
-            </h2>
-            <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
-              theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-600'
-            }`}>
-              {filteredAndSortedStories.length} {filteredAndSortedStories.length === 1 ? 'story' : 'stories'}
-            </span>
-          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <h2 className={`text-base font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                {selectedGenre === 'all'
+                  ? 'All Stories'
+                  : `${getGenreLabel(selectedGenre)} Stories`}
+              </h2>
+              <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-600'
+              }`}>
+                {filteredAndSortedStories.length} {filteredAndSortedStories.length === 1 ? 'story' : 'stories'}
+              </span>
+            </div>
 
-          <div
-            className="min-w-0 w-full sm:w-auto sm:flex-shrink-0 flex items-center justify-end"
-            style={getFilterPositionStyle()}
-          >
-            <StoryFilters
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-              filterBy={filterBy}
-              onFilterChange={setFilterBy}
-              theme={theme}
-            />
+            <div className="w-full sm:w-auto" style={getFilterPositionStyle()}>
+              <StoryFilters
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                filterBy={filterBy}
+                onFilterChange={setFilterBy}
+                theme={theme}
+              />
+            </div>
           </div>
         </div>
 
@@ -369,7 +284,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             {filteredAndSortedStories.map((story) => (
               <StoryCard
                 key={story.id}
-                story={convertToStory(story)}
+                story={convertToDisplayStory(story)}
                 onOpen={onOpenStory}
                 onDelete={onDeleteStory}
                 onBookmark={onBookmarkStory}

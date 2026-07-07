@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { User, UserPlus, Settings, Users, BookOpen, DollarSign, Crown, Zap, LogOut, HeartHandshake, PenTool } from 'lucide-react';
 import styled from 'styled-components';
 import DropdownHeader from './UserDropdown/DropdownHeader';
+import { useIsMobile } from '../../../shared/hooks/useIsMobile';
 import type { Theme, UserPlanType, UserPlan, UserStatus, StatusWithDuration } from '../../../shared/types/story';
 
 interface UserProfileDropdownProps {
@@ -42,12 +44,17 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const [status, setStatus] = useState<UserStatus>(currentStatus);
   const [isAnimating, setIsAnimating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuPortalRef = useRef<HTMLDivElement>(null);
   const lastToggleTime = useRef<number>(0);
   const clickBuffer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const insideTrigger = dropdownRef.current?.contains(target);
+      const insideMenu = menuPortalRef.current?.contains(target);
+      if (!insideTrigger && !insideMenu) {
         setIsOpen(false);
       }
     };
@@ -181,10 +188,74 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const planInfo = getPlanInfo();
   const menuItems = getMenuItems();
 
+  const menuContent = (
+    <React.Fragment>
+      <StyledBackdrop $isOpen={isOpen} onClick={() => setIsOpen(false)} aria-hidden="true" />
+
+      <StyledDropdownMenu $isOpen={isOpen} ref={menuPortalRef}>
+        <StyledMenuCard
+          className="menu-card"
+          $theme={theme}
+          $glow={menuGlow}
+          $planInfo={planInfo}
+          $isOpen={isOpen}
+          style={{
+            '--glow-x': glowPosition.x,
+            '--glow-y': glowPosition.y
+          } as React.CSSProperties}
+        >
+          <DropdownHeader
+            userName={userName}
+            userAvatar={userAvatar}
+            planInfo={planInfo}
+            theme={theme}
+            currentStatus={status}
+            onStatusChange={handleStatusChange}
+            onAccountClick={callbacks.onAccountClick}
+          />
+
+          <div className="menu-items">
+            {menuItems.map((item, index) => {
+              if (item.separator) {
+                return <div key={index} className="menu-divider" />;
+              }
+
+              if (item.sectionTitle) {
+                return (
+                  <div key={index} className={`section-title ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {item.sectionTitle}
+                  </div>
+                );
+              }
+
+              const IconComponent = item.icon!;
+              return (
+                <button
+                  key={index}
+                  className="menu-item"
+                  onClick={() => handleAction(item.action)}
+                  onMouseEnter={(e) => handleMouseEnter(item, e)}
+                  onMouseLeave={() => setMenuGlow('')}
+                  style={{
+                    '--item-color': item.color,
+                    '--item-hover-color': item.hoverColor
+                  } as React.CSSProperties}
+                >
+                  <IconComponent size={18} className="item-icon" />
+                  <span className="item-label">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </StyledMenuCard>
+      </StyledDropdownMenu>
+    </React.Fragment>
+  );
+
   return (
     <StyledWrapper $theme={theme} ref={dropdownRef}>
       <div className="template">
-        <button 
+        <button
           className="popup-trigger"
           onClick={handleToggleDropdown}
           disabled={isAnimating}
@@ -212,63 +283,10 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
           </div>
         </button>
 
-        <StyledDropdownMenu $isOpen={isOpen}>
-          <StyledMenuCard 
-            className="menu-card"
-            $theme={theme}
-            $glow={menuGlow}
-            $planInfo={planInfo}
-            style={{
-              '--glow-x': glowPosition.x,
-              '--glow-y': glowPosition.y
-            } as React.CSSProperties}
-          >
-            <DropdownHeader
-              userName={userName}
-              userAvatar={userAvatar}
-              planInfo={planInfo}
-              theme={theme}
-              currentStatus={status}
-              onStatusChange={handleStatusChange}
-              onAccountClick={callbacks.onAccountClick}
-            />
-
-            <div className="menu-items">
-              {menuItems.map((item, index) => {
-                if (item.separator) {
-                  return <div key={index} className="menu-divider" />;
-                }
-                
-                if (item.sectionTitle) {
-                  return (
-                    <div key={index} className={`section-title ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {item.sectionTitle}
-                    </div>
-                  );
-                }
-                
-                const IconComponent = item.icon!;
-                return (
-                  <button
-                    key={index}
-                    className="menu-item"
-                    onClick={() => handleAction(item.action)}
-                    onMouseEnter={(e) => handleMouseEnter(item, e)}
-                    onMouseLeave={() => setMenuGlow('')}
-                    style={{
-                      '--item-color': item.color,
-                      '--item-hover-color': item.hoverColor
-                    } as React.CSSProperties}
-                  >
-                    <IconComponent size={18} className="item-icon" />
-                    <span className="item-label">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </StyledMenuCard>
-        </StyledDropdownMenu>
+        {!isMobile && menuContent}
       </div>
+
+      {isMobile && createPortal(menuContent, document.body)}
     </StyledWrapper>
   );
 };
@@ -430,6 +448,21 @@ const StyledWrapper = styled.div<{ $theme: Theme }>`
   }
 `;
 
+const StyledBackdrop = styled.div<{ $isOpen: boolean }>`
+  display: none;
+
+  @media (max-width: 640px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: ${props => props.$isOpen ? 1 : 0};
+    visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
+    transition: opacity 0.3s ease;
+    z-index: 49999;
+  }
+`;
+
 const StyledDropdownMenu = styled.div<{ $isOpen: boolean }>`
   position: absolute;
   top: calc(100% + 8px);
@@ -440,9 +473,20 @@ const StyledDropdownMenu = styled.div<{ $isOpen: boolean }>`
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 50000;
   pointer-events: ${props => props.$isOpen ? 'auto' : 'none'};
+
+  @media (max-width: 640px) {
+    /* The card positions itself via \`fixed\`/\`bottom\` below; this wrapper
+       just needs to stop intercepting clicks when closed. */
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: none;
+    pointer-events: none;
+  }
 `;
 
-const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: UserPlan }>`
+const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: UserPlan; $isOpen: boolean }>`
   width: 280px;
   max-width: calc(100vw - 2rem);
   background: ${props => props.$theme === 'dark' ? '#2d3748' : '#f7fafc'};
@@ -454,6 +498,26 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
   backdrop-filter: blur(20px);
   position: relative;
   z-index: 2;
+
+  @media (max-width: 640px) {
+    /* Positioned with \`bottom\` (not \`transform\`) so this never becomes a
+       containing block for the fixed-position status/duration popups nested
+       inside DropdownHeader - a transform here would trap them on-screen
+       instead of letting them anchor to the real viewport. */
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: ${props => props.$isOpen ? '0' : '-100%'};
+    width: 100%;
+    max-width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    pointer-events: auto;
+    z-index: 50001;
+    transition: bottom 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
   &::after {
     content: '';

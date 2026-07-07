@@ -92,6 +92,22 @@ export interface UISettings {
 export type ViewMode = 'grid' | 'list';
 export type SortOption = 'date' | 'title' | 'popularity' | 'readingTime';
 export type FilterOption = 'all' | 'bookmarked' | 'recent' | 'male' | 'female' | 'non-binary' | 'oc' | 'fictional' | 'game' | 'anime' | 'historical' | 'royalty' | 'detective' | 'hero' | 'villain' | 'magical' | 'non-human' | 'monster' | 'monster-girl' | 'robot' | 'vampire' | 'elf' | 'multiple' | 'vtuber' | 'dominant' | 'submissive' | 'scenario' | 'non-english' | 'mature' | 'fantasy' | 'roleplay' | 'furry' | 'action' | 'romance' | 'comedy' | 'drama' | 'horror' | 'adventure' | 'mystery' | 'wholesome' | 'demon' | 'tsundere' | 'goddess' | 'military' | 'maid' | 'warrior' | 'school' | 'shy' | 'werewolf' | 'goth';
+
+export const sortOptions: { value: string; label: string }[] = [
+  { value: 'updated', label: 'Latest Updated' },
+  { value: 'created', label: 'Date Created' },
+  { value: 'title', label: 'Title A-Z' },
+  { value: 'titleDesc', label: 'Title Z-A' },
+  { value: 'author', label: 'Author A-Z' },
+  { value: 'wordCount', label: 'Word Count' },
+  { value: 'wordCountDesc', label: 'Word Count (Desc)' },
+  { value: 'readingTime', label: 'Reading Time' },
+  { value: 'readingTimeDesc', label: 'Reading Time (Desc)' },
+  { value: 'popularity', label: 'Most Popular' },
+  { value: 'rating', label: 'Highest Rated' },
+  { value: 'progress', label: 'Reading Progress' },
+  { value: 'chapters', label: 'Chapter Count' },
+];
 export type WritingMode = 'focus' | 'normal' | 'distraction-free' | 'typewriter' | 'guided' | 'describe' | 'rewrite' | 'brainstorm' | 'visualize';
 export type Theme = 'light' | 'dark';
 
@@ -218,6 +234,7 @@ export const filterOptions: FilterOptionData[] = [
   { value: 'action', label: 'Action', emoji: '💥' },
   { value: 'romance', label: 'Romance', emoji: '💖' },
   { value: 'comedy', label: 'Comedy', emoji: '😂' },
+  { value: 'drama', label: 'Drama', emoji: '🎭' },
   { value: 'horror', label: 'Horror', emoji: '👻' },
   { value: 'adventure', label: 'Adventure', emoji: '⚔️' },
   { value: 'mystery', label: 'Mystery', emoji: '🔍' },

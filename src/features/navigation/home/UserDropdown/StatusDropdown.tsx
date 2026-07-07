@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Circle, CircleSlash, EyeOff, Moon } from 'lucide-react';
+import { Circle, CircleSlash, EyeOff, Moon, ChevronLeft } from 'lucide-react';
 import type { Theme, UserStatus, StatusWithDuration, StatusOption } from '../../../../shared/types/story';
 
 interface StatusDropdownProps {
@@ -205,94 +205,99 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div 
-          className={`absolute left-0 top-full mt-2 w-80 rounded-xl border ${getThemeClasses('dropdown')} ${getThemeClasses('shadow')} z-[100000] pointer-events-auto`}
+        <div
+          className={`fixed inset-x-4 top-1/2 -translate-y-1/2 sm:absolute sm:inset-x-auto sm:translate-y-0 sm:left-0 sm:top-full sm:mt-2 w-auto sm:w-80 max-w-full max-h-[80vh] overflow-y-auto rounded-xl border ${getThemeClasses('dropdown')} ${getThemeClasses('shadow')} z-[100000] pointer-events-auto`}
           style={{
             backgroundColor: getDropdownBg(),
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)'
           }}
         >
-          <div className={`p-4 border-b rounded-t-xl ${getThemeClasses('border')}`}>
-            <h3 className={`text-sm font-semibold ${getThemeClasses('text')}`}>Set your status</h3>
-            <p className={`text-xs mt-1 ${getThemeClasses('textSecondary')}`}>Let others know what you're up to</p>
-          </div>
-
-          <div className="p-3">
-            <div className="space-y-1">
-              {statusOptions.map((status) => (
+          {showDurationPicker ? (
+            <>
+              <div className={`flex items-center gap-2 p-4 border-b rounded-t-xl ${getThemeClasses('border')}`}>
                 <button
-                  key={status.id}
-                  onClick={() => handleStatusClick(status.id)}
+                  onClick={() => { setShowDurationPicker(false); setSelectedStatus('online'); }}
                   disabled={isAnimating}
-                  className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 border ${
-                    currentStatus === status.id 
-                      ? `${getThemeClasses('statusActive')} border-solid` 
-                      : `${getThemeClasses('statusHover')} border-transparent hover:border-gray-300/20`
-                  } ${isAnimating ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+                  aria-label="Back to status list"
+                  className={`-ml-1 p-1 rounded-full transition-colors duration-150 ${getThemeClasses('statusHover')}`}
                 >
-                  <div className="flex-shrink-0">
-                    {status.icon}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className={`font-medium text-sm ${getThemeClasses('text')}`}>
-                      {status.label}
-                    </div>
-                    {status.description && (
-                      <div className={`text-xs mt-0.5 ${getThemeClasses('textSecondary')}`}>
-                        {status.description}
+                  <ChevronLeft className={`w-4 h-4 ${getThemeClasses('text')}`} />
+                </button>
+                <div>
+                  <h3 className={`text-sm font-semibold ${getThemeClasses('text')}`}>Clear status after</h3>
+                  <p className={`text-xs mt-0.5 ${getThemeClasses('textSecondary')}`}>Your status will automatically return to online</p>
+                </div>
+              </div>
+
+              <div className="p-3">
+                <div className="space-y-1">
+                  {timeOptions.map((option) => (
+                    <button
+                      key={option.label}
+                      onClick={() => handleDurationSelect(option)}
+                      disabled={isAnimating}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${getThemeClasses('textTertiary')} ${getThemeClasses('statusHover')} hover:border-gray-300/20 ${
+                        isAnimating ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{option.label}</span>
+                        {option.minutes === null && (
+                          <span className={`text-xs px-2 py-1 rounded-full ${getThemeClasses('badge')}`}>
+                            Manual
+                          </span>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  {currentStatus === status.id && (
-                    <div className="flex-shrink-0">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={`p-4 border-b rounded-t-xl ${getThemeClasses('border')}`}>
+                <h3 className={`text-sm font-semibold ${getThemeClasses('text')}`}>Set your status</h3>
+                <p className={`text-xs mt-1 ${getThemeClasses('textSecondary')}`}>Let others know what you're up to</p>
+              </div>
 
-      {showDurationPicker && (
-        <div 
-          className={`absolute left-full ml-60 top-32 w-72 rounded-xl border ${getThemeClasses('dropdown')} ${getThemeClasses('shadow')} z-[100001] pointer-events-auto`}
-          style={{
-            backgroundColor: getDropdownBg(),
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)'
-          }}
-        >
-          <div className={`p-4 border-b rounded-t-xl ${getThemeClasses('border')}`}>
-            <h3 className={`text-sm font-semibold ${getThemeClasses('text')}`}>Clear status after</h3>
-            <p className={`text-xs mt-1 ${getThemeClasses('textSecondary')}`}>Your status will automatically return to online</p>
-          </div>
-
-          <div className="p-3">
-            <div className="space-y-1">
-              {timeOptions.map((option) => (
-                <button
-                  key={option.label}
-                  onClick={() => handleDurationSelect(option)}
-                  disabled={isAnimating}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${getThemeClasses('textTertiary')} ${getThemeClasses('statusHover')} hover:border-gray-300/20 ${
-                    isAnimating ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>{option.label}</span>
-                    {option.minutes === null && (
-                      <span className={`text-xs px-2 py-1 rounded-full ${getThemeClasses('badge')}`}>
-                        Manual
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+              <div className="p-3">
+                <div className="space-y-1">
+                  {statusOptions.map((status) => (
+                    <button
+                      key={status.id}
+                      onClick={() => handleStatusClick(status.id)}
+                      disabled={isAnimating}
+                      className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 border ${
+                        currentStatus === status.id
+                          ? `${getThemeClasses('statusActive')} border-solid`
+                          : `${getThemeClasses('statusHover')} border-transparent hover:border-gray-300/20`
+                      } ${isAnimating ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+                    >
+                      <div className="flex-shrink-0">
+                        {status.icon}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className={`font-medium text-sm ${getThemeClasses('text')}`}>
+                          {status.label}
+                        </div>
+                        {status.description && (
+                          <div className={`text-xs mt-0.5 ${getThemeClasses('textSecondary')}`}>
+                            {status.description}
+                          </div>
+                        )}
+                      </div>
+                      {currentStatus === status.id && (
+                        <div className="flex-shrink-0">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

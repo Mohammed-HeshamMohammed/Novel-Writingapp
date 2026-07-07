@@ -43,8 +43,9 @@ const Avatar: React.FC<AvatarProps> = ({
     <>
       <style>{`
         @keyframes rgb-rotate {
-          0% { filter: hue-rotate(0deg); }
-          100% { filter: hue-rotate(360deg); }
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
 
         @keyframes premium-glow {

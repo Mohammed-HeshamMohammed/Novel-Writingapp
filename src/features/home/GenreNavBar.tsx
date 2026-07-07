@@ -1,19 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { genres } from './data/genres';
 
-export const genres = [
-  { id: 'all', label: 'All', icon: '🌟' },
-  { id: 'trending', label: 'Trending', icon: '🔥' },
-  { id: 'new', label: 'New', icon: '✨' },
-  { id: 'popular', label: 'Popular', icon: '⭐' },
-  { id: 'anime', label: 'Anime', icon: '🎌' },
-  { id: 'fantasy', label: 'Fantasy', icon: '🧙' },
-  { id: 'scifi', label: 'Sci-Fi', icon: '🚀' },
-  { id: 'romance', label: 'Romance', icon: '💕' },
-  { id: 'adventure', label: 'Adventure', icon: '⚔️' },
-  { id: 'mystery', label: 'Mystery', icon: '🔍' },
-  { id: 'horror', label: 'Horror', icon: '👻' },
-  { id: 'comedy', label: 'Comedy', icon: '😄' }
-];
+export { genres } from './data/genres';
 
 interface GenreNavBarProps {
   onGenreSelect?: (genre: string) => void;
@@ -28,8 +16,28 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
   activeGenre,
   theme = 'dark',
   width = 'w-full min-w-0',
-  height = 'h-14'
+  height = 'h-12 sm:h-14',
 }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollShadows = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  };
+
+  useEffect(() => {
+    updateScrollShadows();
+    const el = scrollRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(updateScrollShadows);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const handleGenreClick = (genreId: string) => {
     try {
       onGenreSelect?.(genreId);
@@ -38,52 +46,49 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
     }
   };
 
-  const themeClasses = theme === 'light' 
-    ? 'bg-white/40 border-gray-200/50 text-gray-800 shadow-sm'
-    : 'bg-gray-900/40 border-gray-800/40 text-white shadow-md';
+  const themeClasses = theme === 'light'
+    ? 'bg-white/60 border-gray-200/60 text-gray-800 shadow-sm'
+    : 'bg-gray-900/50 border-gray-800/50 text-white shadow-md';
+
+  const edgeFade = theme === 'light' ? 'from-white/90' : 'from-gray-900/90';
 
   return (
     <>
       <style>{`
-        .scrollbar-none::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-none {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .genre-btn {
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .genre-btn:hover {
-          transform: translateY(-1px);
-        }
-        .genre-btn:active {
-          transform: translateY(1px);
-        }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        .genre-btn { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; }
+        .genre-btn:hover { transform: translateY(-1px); }
+        .genre-btn:active { transform: translateY(0) scale(0.97); }
       `}</style>
-      
-      <div className={`${width} ${height} ${themeClasses} backdrop-blur-md rounded-2xl px-3 py-2 border flex items-center`}>
-        <div className="flex items-center justify-start overflow-x-auto overflow-y-hidden scrollbar-none w-full h-full">
-          <div className="flex gap-2 px-1 min-w-max h-full items-center">
+
+      <div className={`${width} ${height} ${themeClasses} relative backdrop-blur-md rounded-2xl border flex items-center`}>
+        {canScrollLeft && (
+          <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-8 rounded-l-2xl bg-gradient-to-r ${edgeFade} to-transparent z-10`} />
+        )}
+
+        <div
+          ref={scrollRef}
+          onScroll={updateScrollShadows}
+          className="flex items-center overflow-x-auto overflow-y-hidden scrollbar-none scroll-smooth snap-x w-full h-full px-2"
+        >
+          <div className="flex gap-2 min-w-max h-full items-center py-2">
             {genres.map((genre) => {
               const isActive = activeGenre === genre.id;
-              
-              let buttonClass = '';
-              if (isActive) {
-                buttonClass = 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 border-transparent';
-              } else {
-                buttonClass = theme === 'light'
-                  ? 'bg-gray-100/70 hover:bg-gray-200/70 text-gray-700 hover:text-gray-900 border-gray-200/30'
-                  : 'bg-gray-850/50 hover:bg-gray-800/60 text-white/80 hover:text-white border-white/5';
-              }
+
+              const buttonClass = isActive
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 border-transparent'
+                : theme === 'light'
+                  ? 'bg-gray-100/70 hover:bg-gray-200/70 text-gray-700 hover:text-gray-900 border-gray-200/50'
+                  : 'bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border-white/5';
 
               return (
                 <button
                   key={genre.id}
                   onClick={() => handleGenreClick(genre.id)}
-                  className={`genre-btn ${buttonClass} backdrop-blur-sm px-4.5 py-1.5 rounded-xl flex items-center gap-2 border whitespace-nowrap h-9 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400`}
+                  className={`genre-btn snap-start ${buttonClass} px-4 py-1.5 rounded-xl flex items-center gap-1.5 border whitespace-nowrap h-9 text-xs font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400`}
                   aria-label={`Select ${genre.label}`}
+                  aria-pressed={isActive}
                 >
                   <span className="text-sm select-none">{genre.icon}</span>
                   <span>{genre.label}</span>
@@ -92,6 +97,10 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
             })}
           </div>
         </div>
+
+        {canScrollRight && (
+          <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-8 rounded-r-2xl bg-gradient-to-l ${edgeFade} to-transparent z-10`} />
+        )}
       </div>
     </>
   );
