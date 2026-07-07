@@ -1,127 +1,111 @@
-# 📝 Novel-Writingapp – Your Offline AI-Powered Writing Assistant
+# Novel-Writingapp
 
-**Novel-Writingapp** is a full-featured, offline-first, privacy-respecting desktop app built for novelists, storytellers, and roleplay writers. With a React + Tailwind frontend and FastAPI backend, it lets you structure entire projects, track characters and plot, and optionally leverage AI assistance when you need it — without cloud lock-in.
+An offline-first writing app for organizing novels: chapters, characters,
+locations, and a timeline, all editable from a single dashboard. Built as a
+web app (deployable to Netlify) that can also run as a desktop app via
+Electron, with an optional FastAPI backend for save/import/export.
 
----
+## Project structure
 
-## ⚙️ Core Feature Highlights
+```
+Novel-Writingapp/
+├── src/                      Frontend (React + TypeScript + Vite + Tailwind)
+│   ├── app/                  App shell: root component, theme provider
+│   ├── features/             One folder per feature area
+│   │   ├── home/             Story dashboard, filters, story cards
+│   │   ├── editor/           Chapter editor, story editor, settings popup
+│   │   ├── navigation/       Top nav bars, notifications, user dropdown
+│   │   ├── sidebar-left/     Chapters/characters/locations/timeline panel
+│   │   ├── sidebar-right/    Writing suggestions/analytics/history panel
+│   │   └── fun/              Easter-egg components
+│   ├── shared/                Code reused across features
+│   │   ├── components/       Generic UI (e.g. ThemeToggle)
+│   │   ├── types/             Shared TypeScript types (Story, Chapter, ...)
+│   │   └── utils/             localStorage persistence, word-count helpers
+│   └── assets/
+├── backend/                  FastAPI service for save/import/export (optional)
+│   └── app/
+│       ├── main.py           App entrypoint, CORS, router wiring
+│       ├── core/config.py    Settings
+│       └── api/routes/       Route modules
+├── desktop/                  Electron shell that wraps the built web app
+│   ├── main.cjs
+│   └── package.json          Separate deps so the web build stays lean
+├── public/
+├── netlify.toml               Netlify build config
+└── package.json               Frontend deps + scripts (this is what Netlify builds)
+```
 
-### 1. ✏️ Chapter & Scene Management
-- Multi-level chapter → scene hierarchy
-- Reorder with drag-and-drop
-- Collapse/expand for cleaner workflow
-- Label scenes by tone (Romance, Reveal, Tension, etc.)
-- Track word counts per scene and chapter
-- Visual progress indicators
+The guiding rule: **the root `package.json` only contains what the deployed
+web app needs.** Electron and its dependencies live in `desktop/` so that
+`npm install` at the repo root — which is what Netlify runs — never has to
+touch Electron's (large, platform-specific) binary download.
 
-### 2. 🧙‍♀️ Character Management System
-- Full profile: name, age, role, personality, backstory
-- Relationship mapping and appearance tracking
-- Link characters to scenes/chapters
-- View chapters by character presence
-- Filter: “Show chapters without this character”
-- Built-in search
+## Getting started
 
-### 3. 🧾 Story Metadata & Tags
-- Project-level metadata: title, genre, author, theme
-- Word count goals per chapter & overall
-- Series title and status tracking (Draft, Editing, Final)
-- Last modified timestamps
-- Custom tags
-
-### 4. 🌍 Worldbuilding Notes System
-- Create notes for locations, factions, magic, tech, etc.
-- Rich text support: lists, bold, links, code blocks
-- Tag with icons or colors
-- Link to chapters and characters
-- Full-text search
-
-### 5. 🎯 Goal Tracking & Writing Stats
-- Set daily and weekly writing goals (word/time-based)
-- Track progress per session and scene
-- Session history log
-- Visual progress bars
-
-### 6. 🧱 Draft History & Versioning
-- Auto-save on every change
-- View or restore past versions
-- Tag versions (e.g. First Draft, Pre-Edit)
-- Full rollback support
-
-### 7. 🎭 Plot & Story Arc Tools
-- Add plot points (inciting incident, climax, etc.)
-- Organize by arc (Main plot, Subplot A/B/C)
-- Timeline view
-- Scene-arc mapping
-- Chapter coverage insights
-
-### 8. 🧩 Outline & Index Card View
-- Story outline view: chapter, scene, synopsis
-- Index cards: freeform drag-and-drop
-- Printable/exportable outlines
-
-### 9. 🗂 Project Dashboard
-- List view of all stories
-- Filter by status, genre, last edited
-- Add cover images to each project
-- Quick access to recent projects
-
-### 10. 📤 Export-Ready Manuscript Tools
-- Export full or partial manuscripts as `.txt`, `.pdf`, or `.epub`
-- Custom export settings: include/exclude metadata
-- Formatting options: font, spacing, chapter breaks
-- Auto-generated title page
-
----
-
-## 📊 Functional Feature Breakdown
-
-The chart below illustrates the number of internal features per core writing module:
-## 📊 Functional Feature Breakdown
-
-| Module                    | Feature Count | Visual Representation      |
-|---------------------------|---------------|----------------------------|
-| Chapter & Scene Manager   | 6             | ██████                    |
-| Character Management      | 6             | ██████                    |
-| Story Metadata            | 5             | █████                     |
-| Worldbuilding Notes       | 4             | ████                      |
-| Writing Stats             | 4             | ████                      |
-| Draft History             | 4             | ████                      |
-| Plot & Arc Tools          | 4             | ████                      |
-| Outline & Index View      | 3             | ███                       |
-| Project Dashboard         | 4             | ████                      |
-| Export Tools              | 4             | ████                      |
-
-> Based on `Plan.txt` priorities. Text-based bars are approximate visual indicators.
-
----
-
-## 🧠 Optional AI Assistance
-
-Use AI only when you need it:
-- Trigger dialogue suggestions, rewriting, or plot ideas manually
-- Token-efficient prompt structure
-- Scoped memory per chapter/project
-- Roleplay-compatible AI behavior
-
----
-
-## 🛠 Tech Stack
-
-| Layer       | Tech                             |
-|-------------|----------------------------------|
-| Frontend    | React.js + TailwindCSS + Vite    |
-| Desktop     | Electron.js                      |
-| Backend     | FastAPI (Python)                 |
-| Storage     | Local filesystem                 |
-| AI Engine   | Token-managed LLM (manual trigger) |
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the Repository
+### Web app
 
 ```bash
-git clone https://github.com/Mohammed-HeshamMohammed/Novel-Writingapp.git
-cd Novel-Writingapp
+npm install
+npm run dev        # http://localhost:5173
+```
+
+Other scripts: `npm run build` (type-check + production build to `dist/`),
+`npm run preview` (serve the production build locally), `npm run lint`.
+
+### Desktop app (Electron)
+
+```bash
+npm --prefix desktop install
+npm run desktop     # starts the Vite dev server and an Electron window together
+```
+
+For a packaged build, run `npm run build` at the repo root first (so
+`dist/` exists), then `npm --prefix desktop run electron`.
+
+### Backend (optional, for save/import/export)
+
+The editor's Save/Import/Export buttons call a backend at
+`VITE_API_URL` (default `http://127.0.0.1:8000` — see `.env.example`).
+Without a backend running, everything else in the app still works: stories
+are persisted to `localStorage` regardless.
+
+```bash
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+See `backend/README.md` for endpoint details and what's still a stub
+(the in-memory story store, EPUB import).
+
+## Deploying to Netlify
+
+The repo root is the Netlify base directory. `netlify.toml` sets:
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Node version: 20
+
+Connect the repo in Netlify and it builds with no further configuration. If
+you wire up the FastAPI backend, set `VITE_API_URL` as a Netlify environment
+variable so the deployed frontend can reach it.
+
+## Tech stack
+
+| Layer    | Tech                                   |
+|----------|-----------------------------------------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
+| Desktop  | Electron                                |
+| Backend  | FastAPI (Python)                        |
+| Storage  | `localStorage` (offline-first); backend persistence is a stub — swap for a real database when you need it |
+
+## Known gaps
+
+- The backend's story store is in-memory (resets on restart) and EPUB
+  import isn't implemented yet — both are called out with comments/errors
+  at the relevant code, not silently faked.
+- `npm run lint` reports a number of pre-existing `no-explicit-any`
+  warnings in the sidebar and navigation components; worth tightening up
+  incrementally rather than in one large pass.
