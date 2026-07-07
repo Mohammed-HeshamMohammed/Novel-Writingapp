@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { ThemeSwitch } from '../shared/ThemeSwitch';
 import { TooltipButton } from '../shared/TooltipButton';
 import { getThemeStyles } from '../utils/themeUtils';
@@ -75,6 +75,7 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
   themeToggleDebounceMs = 300,
 }) => {
   const [showNewStoryModal, setShowNewStoryModal] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const styles = getThemeStyles(theme);
 
   const handleAction = (action?: () => void) => {
@@ -116,13 +117,13 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
         className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 rounded-full shadow-lg ${styles.nav} border max-w-4xl w-[95vw]`}
       >
         <div className="px-4 sm:px-6">
-          <div className="flex items-center h-14 relative justify-between">
+          <div className="flex items-center h-14 relative justify-between gap-2">
             <div className="flex items-center flex-shrink-0">
               <h1 className={`text-lg font-bold ${styles.text} hidden sm:block`}>Novelist</h1>
               <h1 className={`text-lg font-bold ${styles.text} sm:hidden`}>N</h1>
             </div>
-            
-            <div className="flex-1 max-w-sm mx-4">
+
+            <div className="hidden sm:block flex-1 max-w-sm mx-4">
               <div className="relative">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${styles.textSecondary} w-4 h-4`} />
                 <input
@@ -134,8 +135,17 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
                 />
               </div>
             </div>
-            
-            <div className="flex items-center space-x-2">
+
+            <button
+              type="button"
+              onClick={() => setShowMobileSearch(prev => !prev)}
+              className={`sm:hidden flex-shrink-0 p-2 rounded-full transition-colors duration-200 ${styles.textSecondary} hover:bg-black/5 dark:hover:bg-white/10`}
+              aria-label={showMobileSearch ? 'Close search' : 'Search stories'}
+            >
+              {showMobileSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+            </button>
+
+            <div className="flex items-center space-x-1 sm:space-x-2">
               <TooltipButton
                 tooltip="Create New Story"
                 onClick={handleNewStoryClick}
@@ -186,9 +196,25 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
               />
             </div>
           </div>
+
+          {showMobileSearch && (
+            <div className="sm:hidden pb-3">
+              <div className="relative">
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${styles.textSecondary} w-4 h-4`} />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Search stories..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  className={`w-full pl-9 pr-3 py-2 text-sm border rounded-full ${styles.input} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </nav>
-      
+
       <div className="h-20"></div>
 
       {showNewStoryModal && (

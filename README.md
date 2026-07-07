@@ -21,7 +21,8 @@ Novel-Writingapp/
 │   ├── shared/                Code reused across features
 │   │   ├── components/       Generic UI (e.g. ThemeToggle)
 │   │   ├── types/             Shared TypeScript types (Story, Chapter, ...)
-│   │   └── utils/             localStorage persistence, word-count helpers
+│   │   ├── utils/             localStorage persistence, word-count helpers
+│   │   └── services/          Supabase client
 │   └── assets/
 ├── backend/                  FastAPI service for save/import/export (optional)
 │   └── app/
@@ -94,6 +95,15 @@ uvicorn app.main:app --reload
 See `backend/README.md` for endpoint details and what's still a stub
 (the in-memory story store, EPUB import).
 
+### Supabase (optional, for a hosted database)
+
+`src/shared/services/supabase.ts` creates a Supabase client from
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (see
+`.env.example`). Copy real values into a local `.env.local` (gitignored,
+never committed). If unset, `supabase` is exported as `null` and
+`isSupabaseConfigured` is `false` — nothing else in the app depends on it
+yet, so it's opt-in wiring rather than a hard requirement.
+
 ## Deploying to Netlify
 
 The repo root is the Netlify base directory. `netlify.toml` sets:
@@ -102,9 +112,11 @@ The repo root is the Netlify base directory. `netlify.toml` sets:
 - Publish directory: `dist`
 - Node version: 20
 
-Connect the repo in Netlify and it builds with no further configuration. If
-you wire up the FastAPI backend, set `VITE_API_URL` as a Netlify environment
-variable so the deployed frontend can reach it.
+Connect the repo in Netlify and it builds with no further configuration.
+Set any of `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`
+as Netlify environment variables (Site settings > Environment variables) if
+you want the deployed frontend to reach a backend and/or Supabase project —
+Vite only inlines `VITE_`-prefixed variables that are present at build time.
 
 ## Tech stack
 
@@ -113,7 +125,7 @@ variable so the deployed frontend can reach it.
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS |
 | Desktop  | Tauri (Rust + OS-native webview)         |
 | Backend  | FastAPI (Python)                        |
-| Storage  | `localStorage` (offline-first); backend persistence is a stub — swap for a real database when you need it |
+| Storage  | `localStorage` (offline-first) + optional Supabase |
 
 ## Known gaps
 

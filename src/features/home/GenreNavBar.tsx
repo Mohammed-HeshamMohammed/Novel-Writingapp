@@ -27,7 +27,7 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
   onGenreSelect,
   activeGenre,
   theme = 'dark',
-  width = 'w-auto',
+  width = 'w-full min-w-0',
   height = 'h-20'
 }) => {
   const handleGenreClick = (genreId: string) => {

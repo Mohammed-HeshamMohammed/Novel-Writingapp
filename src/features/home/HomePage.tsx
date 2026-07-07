@@ -59,7 +59,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onBookmarkStory,
   theme,
   onThemeChange,
-  genreFilterSpacing = 'gap-16',
+  genreFilterSpacing = 'gap-3 sm:gap-4',
   navbarSpacing = 'mb-2',
   contentSpacing = 'pt-2',
   filterPosition = {}
@@ -206,7 +206,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const renderEmptyState = () => (
     <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4">
-      <div className={`w-15 h-15 sm:w-16 sm:h-16 ${styles.iconBackground} rounded-full flex items-center justify-center mb-4`}>
+      <div className={`w-14 h-14 sm:w-16 sm:h-16 ${styles.iconBackground} rounded-full flex items-center justify-center mb-4`}>
         <Plus className={`w-6 h-6 sm:w-8 sm:h-8 ${styles.iconColor}`} />
       </div>
       <h3 className={`text-lg sm:text-xl font-medium ${styles.text} mb-2`}>
@@ -252,18 +252,18 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       )}
 
-      <main className={`w-full px-4 sm:px-6 lg:px-10 xl:px-15 py-4 sm:py-8 ${contentSpacing}`}>
-        <div className={`flex flex-col sm:flex-row items-start ${genreFilterSpacing} mb-2`}>
-          <div className="flex h-150 w-auto flex-1 max-w-4xl">
+      <main className={`w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-4 sm:py-8 ${contentSpacing}`}>
+        <div className={`flex flex-col sm:flex-row items-stretch sm:items-start ${genreFilterSpacing} mb-2`}>
+          <div className="flex min-w-0 flex-1 sm:max-w-4xl">
             <GenreNavBar
               theme={theme}
               activeGenre={selectedGenre}
               onGenreSelect={handleGenreSelect}
             />
           </div>
-          
-          <div 
-            className="flex-shrink-0 w-full sm:w-auto sm:ml-4"
+
+          <div
+            className="min-w-0 w-full sm:w-auto sm:flex-shrink-0"
             style={getFilterPositionStyle()}
           >
             <StoryFilters

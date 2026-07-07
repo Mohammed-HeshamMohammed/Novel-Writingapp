@@ -317,6 +317,10 @@ const StyledWrapper = styled.div<{ $theme: Theme }>`
     letter-spacing: 0.5px;
     color: ${props => props.$theme === 'dark' ? '#e2e8f0' : '#2d3748'};
     margin: 0;
+
+    @media (max-width: 639px) {
+      display: none;
+    }
   }
 
   .avatar-container {
@@ -440,6 +444,7 @@ const StyledDropdownMenu = styled.div<{ $isOpen: boolean }>`
 
 const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: UserPlan }>`
   width: 280px;
+  max-width: calc(100vw - 2rem);
   background: ${props => props.$theme === 'dark' ? '#2d3748' : '#f7fafc'};
   border-radius: 16px;
   padding: 0;

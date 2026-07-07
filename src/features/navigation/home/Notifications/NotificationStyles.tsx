@@ -83,11 +83,11 @@ export const StyledWrapper = styled.div<{ theme: 'light' | 'dark'; isOpen: boole
   .popup-main {
     position: absolute;
     top: 100%;
-    right: -160px;
+    right: -8px;
     opacity: 0;
     margin-top: 8px;
     border-radius: 16px;
-    width: 380px;
+    width: min(380px, calc(100vw - 2rem));
     max-height: 520px;
     background: ${props => props.theme === 'dark' 
       ? 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)' 
@@ -104,6 +104,15 @@ export const StyledWrapper = styled.div<{ theme: 'light' | 'dark'; isOpen: boole
     z-index: 1000;
     pointer-events: none;
     transform: translateY(-10px) scale(0.95);
+
+    @media (max-width: 639px) {
+      position: fixed;
+      top: 76px;
+      left: 1rem;
+      right: 1rem;
+      width: auto;
+      margin-top: 0;
+    }
   }
 
   .popup-main.open {

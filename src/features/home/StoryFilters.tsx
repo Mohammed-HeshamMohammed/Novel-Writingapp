@@ -375,27 +375,27 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
         .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
       `}</style>
       <div className="w-full px-0">
-        <div className="flex items-center justify-between gap-4 p-3 sm:p-4 mb-4 sm:mb-6 transition-colors duration-200">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 mb-4 sm:mb-6 transition-colors duration-200">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <div className="inline-flex items-center relative group">
-              <button 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
-                className={`flex items-center justify-between min-w-[150px] px-3 py-2 border rounded-md text-sm cursor-pointer focus:outline-none focus:ring-1 transition-colors duration-200 ${styles.button}`}
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className={`flex items-center justify-between min-w-[120px] sm:min-w-[150px] px-3 py-2 border rounded-md text-sm cursor-pointer focus:outline-none focus:ring-1 transition-colors duration-200 ${styles.button}`}
                 aria-label="Filter stories"
               >
                 <span className="truncate">{getDisplayText()}</span>
-                <Filter className="w-4 h-4 ml-2" />
+                <Filter className="w-4 h-4 ml-2 flex-shrink-0" />
               </button>
-              
+
               {isDropdownOpen && (
-                <div ref={dropdownRef} className={`absolute pointer-events-auto backdrop-blur-sm rounded-lg shadow-lg border transition-all duration-200 ease-in-out top-full translate-y-2 mt-2 z-[9999] w-[600px] ${getDropdownPosition(true)} ${styles.dropdown}`}>
+                <div ref={dropdownRef} className={`absolute pointer-events-auto backdrop-blur-sm rounded-lg shadow-lg border transition-all duration-200 ease-in-out top-full translate-y-2 mt-2 z-[9999] w-[min(600px,calc(100vw-2rem))] ${getDropdownPosition(true)} ${styles.dropdown}`}>
                   <div className={`absolute w-2 h-2 transform rotate-45 top-[-4px] left-6 border-l border-t ${styles.dropdownArrow}`}></div>
                   <div className="relative max-h-80 overflow-hidden rounded-b-lg">
                     {canScrollUp && <ScrollArrow direction="up" theme={theme} />}
-                    <div 
-                      ref={scrollContainerRef} 
-                      onScroll={handleScroll} 
-                      className="p-4 grid grid-cols-3 gap-2 max-h-80 overflow-y-auto scrollbar-hide"
+                    <div
+                      ref={scrollContainerRef}
+                      onScroll={handleScroll}
+                      className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-80 overflow-y-auto scrollbar-hide"
                     >
                       {filterOptions.map(option => (
                         <label
@@ -423,17 +423,17 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
             </div>
 
             <div className="inline-flex items-center relative group">
-              <button 
-                onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)} 
-                className={`flex items-center justify-between min-w-[150px] px-3 py-2 border rounded-md text-sm cursor-pointer focus:outline-none focus:ring-1 transition-colors duration-200 ${styles.button}`}
+              <button
+                onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                className={`flex items-center justify-between min-w-[120px] sm:min-w-[150px] px-3 py-2 border rounded-md text-sm cursor-pointer focus:outline-none focus:ring-1 transition-colors duration-200 ${styles.button}`}
                 aria-label="Sort stories"
               >
                 <span className="truncate">{getSortDisplayText()}</span>
-                <SortAsc className="w-4 h-4 ml-2" />
+                <SortAsc className="w-4 h-4 ml-2 flex-shrink-0" />
               </button>
-              
+
               {isSortDropdownOpen && (
-                <div ref={sortDropdownRef} className={`absolute pointer-events-auto backdrop-blur-sm rounded-lg shadow-lg border transition-all duration-200 ease-in-out top-full translate-y-2 mt-2 z-[9999] w-[300px] ${getDropdownPosition(false)} ${styles.dropdown}`}>
+                <div ref={sortDropdownRef} className={`absolute pointer-events-auto backdrop-blur-sm rounded-lg shadow-lg border transition-all duration-200 ease-in-out top-full translate-y-2 mt-2 z-[9999] w-[min(300px,calc(100vw-2rem))] ${getDropdownPosition(false)} ${styles.dropdown}`}>
                   <div className={`absolute w-2 h-2 transform rotate-45 top-[-4px] left-6 border-l border-t ${styles.dropdownArrow}`}></div>
                   <div className="relative max-h-80 overflow-hidden rounded-b-lg">
                     {canSortScrollUp && <ScrollArrow direction="up" theme={theme} />}
