@@ -34,6 +34,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
+
+      // Clean up hash parameters (like #access_token=...) from the URL after successful login
+      if (newSession && window.location.hash) {
+        if (window.location.hash.includes('access_token=') || window.location.hash === '#') {
+          try {
+            window.history.replaceState(
+              null,
+              document.title,
+              window.location.pathname + window.location.search
+            );
+          } catch (e) {
+            console.error('Failed to clean URL hash:', e);
+          }
+        }
+      }
     });
 
     return () => listener.subscription.unsubscribe();

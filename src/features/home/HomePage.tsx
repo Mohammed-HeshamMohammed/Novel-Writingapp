@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import type { StoryMetadata, ViewMode, Theme, UserPlanType, UserStatus } from '../../shared/types/story';
 import { StoryCard } from './components/StoryCard';
 import { StoryFilters } from './StoryFilters';
-import { GenreNavBar } from './GenreNavBar';
+import { GenreNavBar, genres } from './GenreNavBar';
 import { NavigationBar } from '../navigation/NavigationBar';
 import { CustomizeModal } from './Customizemodal';
 import Notification from '../fun/Gokutextreminder';
@@ -70,7 +70,6 @@ export const HomePage: React.FC<HomePageProps> = ({
   onBookmarkStory,
   theme,
   onThemeChange,
-  genreFilterSpacing = 'gap-3 sm:gap-4',
   navbarSpacing = 'mb-2',
   contentSpacing = 'pt-2',
   filterPosition = {},
@@ -171,15 +170,22 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   const matchesGenre = (story: StoryMetadata, genre: string) => {
-    const storyTags = story.tags || [];
-    const storyCategory = story.category || '';
+    const storyTags = (story.tags || []).map(t => t.toLowerCase());
+    const storyCategory = (story.category || '').toLowerCase();
+    const cleanGenre = genre.toLowerCase();
     
-    switch (genre) {
+    switch (cleanGenre) {
       case 'all': return true;
       case 'popular': return (story.popularity || 0) > 500;
       case 'trending': return Date.now() - story.updatedAt.getTime() < 3 * 24 * 60 * 60 * 1000;
       case 'new': return Date.now() - story.updatedAt.getTime() < 24 * 60 * 60 * 1000;
-      default: return storyTags.includes(genre) || storyCategory === genre;
+      default: {
+        const normGenre = cleanGenre === 'scifi' ? 'sci-fi' : cleanGenre;
+        return storyTags.includes(normGenre) || 
+               storyTags.includes(cleanGenre) || 
+               storyCategory === normGenre || 
+               storyCategory === cleanGenre;
+      }
     }
   };
 
@@ -314,17 +320,32 @@ export const HomePage: React.FC<HomePageProps> = ({
       )}
 
       <main className={`w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-4 sm:py-8 pb-24 md:pb-8 ${contentSpacing}`}>
-        <div className={`flex flex-col sm:flex-row items-stretch sm:items-start ${genreFilterSpacing} mb-2`}>
-          <div className="flex min-w-0 flex-1 sm:max-w-4xl">
-            <GenreNavBar
-              theme={theme}
-              activeGenre={selectedGenre}
-              onGenreSelect={handleGenreSelect}
-            />
+        {/* Genre/Category Bar (Full Width) */}
+        <div className="w-full mb-6">
+          <GenreNavBar
+            theme={theme}
+            activeGenre={selectedGenre}
+            onGenreSelect={handleGenreSelect}
+          />
+        </div>
+
+        {/* Filters and Active Category Header Row */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className={`text-base font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              {selectedGenre === 'all' 
+                ? 'All Stories' 
+                : `${genres.find(g => g.id === selectedGenre)?.label || selectedGenre} Stories`}
+            </h2>
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+              theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-600'
+            }`}>
+              {filteredAndSortedStories.length} {filteredAndSortedStories.length === 1 ? 'story' : 'stories'}
+            </span>
           </div>
 
           <div
-            className="min-w-0 w-full sm:w-auto sm:flex-shrink-0"
+            className="min-w-0 w-full sm:w-auto sm:flex-shrink-0 flex items-center justify-end"
             style={getFilterPositionStyle()}
           >
             <StoryFilters

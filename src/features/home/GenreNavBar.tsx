@@ -1,6 +1,6 @@
 import React from 'react';
 
-const genres = [
+export const genres = [
   { id: 'all', label: 'All', icon: '🌟' },
   { id: 'trending', label: 'Trending', icon: '🔥' },
   { id: 'new', label: 'New', icon: '✨' },
@@ -28,7 +28,7 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
   activeGenre,
   theme = 'dark',
   width = 'w-full min-w-0',
-  height = 'h-20'
+  height = 'h-14'
 }) => {
   const handleGenreClick = (genreId: string) => {
     try {
@@ -39,8 +39,8 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
   };
 
   const themeClasses = theme === 'light' 
-    ? 'bg-semitransparent border-white/30 text-gray-800'
-    : 'bg-semitransparent border-white/20 text-white';
+    ? 'bg-white/40 border-gray-200/50 text-gray-800 shadow-sm'
+    : 'bg-gray-900/40 border-gray-800/40 text-white shadow-md';
 
   return (
     <>
@@ -52,28 +52,41 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+        .genre-btn {
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .genre-btn:hover {
+          transform: translateY(-1px);
+        }
+        .genre-btn:active {
+          transform: translateY(1px);
+        }
       `}</style>
       
-      <div className={`${width} ${height} ${themeClasses} backdrop-blur-md bg-blur-md rounded-3xl p-4`}>
-        <div className="flex items-center justify-start overflow-x-auto overflow-y-hidden scrollbar-none h-full">
+      <div className={`${width} ${height} ${themeClasses} backdrop-blur-md rounded-2xl px-3 py-2 border flex items-center`}>
+        <div className="flex items-center justify-start overflow-x-auto overflow-y-hidden scrollbar-none w-full h-full">
           <div className="flex gap-2 px-1 min-w-max h-full items-center">
             {genres.map((genre) => {
               const isActive = activeGenre === genre.id;
-              const buttonClass = isActive
-                ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-105'
-                : theme === 'light'
-                ? 'hover:bg-semitransparent hover:bg-white/50 text-gray-700 hover:text-gray-900'
-                : 'hover:bg-semitransparent hover:bg-white/20 text-white/80 hover:text-white';
+              
+              let buttonClass = '';
+              if (isActive) {
+                buttonClass = 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 border-transparent';
+              } else {
+                buttonClass = theme === 'light'
+                  ? 'bg-gray-100/70 hover:bg-gray-200/70 text-gray-700 hover:text-gray-900 border-gray-200/30'
+                  : 'bg-gray-850/50 hover:bg-gray-800/60 text-white/80 hover:text-white border-white/5';
+              }
 
               return (
                 <button
                   key={genre.id}
                   onClick={() => handleGenreClick(genre.id)}
-                  className={`${buttonClass} backdrop-blur-sm px-3 py-1.5 rounded-xl flex items-center gap-2 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-nowrap border border-white/10 h-8`}
+                  className={`genre-btn ${buttonClass} backdrop-blur-sm px-4.5 py-1.5 rounded-xl flex items-center gap-2 border whitespace-nowrap h-9 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400`}
                   aria-label={`Select ${genre.label}`}
                 >
-                  <span className="text-md">{genre.icon}</span>
-                  <span className="font-medium text-xs">{genre.label}</span>
+                  <span className="text-sm select-none">{genre.icon}</span>
+                  <span>{genre.label}</span>
                 </button>
               );
             })}

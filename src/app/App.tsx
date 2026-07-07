@@ -65,24 +65,57 @@ function AppContent() {
           .maybeSingle();
         if (error) throw error;
         if (data) {
+          const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
+          const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+
+          // If username in DB is empty or default email prefix, and googleName is available, prefer the Google name
+          const emailPrefix = user.email?.split('@')[0] || '';
+          const currentDbName = data.username || '';
+          const prefersGoogleName = !!(googleName && (!currentDbName || currentDbName === emailPrefix));
+
+          const loadedUsername = prefersGoogleName ? googleName : (currentDbName || emailPrefix || 'User');
+          const loadedAvatar = data.avatar_url || googleAvatar || undefined;
+
           setProfile({
-            username: data.username || user.email?.split('@')[0] || 'User',
-            avatarUrl: data.avatar_url || undefined,
+            username: loadedUsername,
+            avatarUrl: loadedAvatar,
             planType: (data.plan_type as UserPlanType) || 'free',
             status: (data.status as UserStatus) || 'online',
           });
+
+          // Sync metadata back to Supabase profiles table if out of sync
+          if ((!data.avatar_url && googleAvatar) || prefersGoogleName) {
+            supabase
+              .from('profiles')
+              .update({
+                username: loadedUsername,
+                avatar_url: loadedAvatar || null,
+              })
+              .eq('id', user.id)
+              .then(({ error: syncError }) => {
+                if (syncError) {
+                  console.error('Failed to sync google profile info to DB:', syncError);
+                }
+              });
+          }
         } else {
-          // If no profile exists, try to insert one
-          const defaultUsername = user.email?.split('@')[0] || 'User';
+          // If no profile exists, try to insert one using Google metadata if available
+          const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
+          const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+
+          const defaultUsername = googleName || user.email?.split('@')[0] || 'User';
+
           const newProfile = {
             id: user.id,
             username: defaultUsername,
+            avatar_url: googleAvatar,
             plan_type: 'free',
             status: 'online'
           };
           await supabase.from('profiles').insert(newProfile);
           setProfile({
             username: defaultUsername,
+            avatarUrl: googleAvatar || undefined,
             planType: 'free',
             status: 'online'
           });
