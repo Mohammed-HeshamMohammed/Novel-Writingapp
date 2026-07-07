@@ -9,6 +9,7 @@ import { supabase, isSupabaseConfigured } from '../shared/services/supabase';
 import { createNewStory, updateStoryWordCount } from '../shared/utils/storyUtils';
 import { saveStory, loadStory, deleteStory, getAllStoryMetadata, toggleBookmark } from '../shared/utils/storage';
 import { getStoredTheme, storeTheme } from '../features/navigation/utils/themeUtils';
+import { resolvePlanForUser } from '../shared/config/ownerAccess';
 
 type AppState = 'home' | 'editor';
 
@@ -320,7 +321,7 @@ function AppContent() {
           userEmail={user?.email}
           userName={profile.username}
           userAvatar={profile.avatarUrl}
-          userPlan={profile.planType}
+          userPlan={resolvePlanForUser(profile.planType, user?.email)}
           userStatus={profile.status}
           onProfileUpdate={handleProfileUpdate}
           onPlanUpgrade={handlePlanUpgrade}

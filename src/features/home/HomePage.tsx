@@ -238,7 +238,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       )}
 
-      <main className={`w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-4 sm:py-8 pb-24 md:pb-8 ${contentSpacing}`}>
+      <main className={`w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-4 sm:py-8 pb-24 lg:pb-8 ${contentSpacing}`}>
         {/* Discover panel: genre chips + filter/sort/view toolbar, grouped as one unit */}
         <div className="w-full mb-6 space-y-3">
           <GenreNavBar

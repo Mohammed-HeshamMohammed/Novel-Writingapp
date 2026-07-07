@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState } from 'react';
+import { useFloating, useClick, useDismiss, useInteractions, FloatingPortal } from '@floating-ui/react';
 import { User, UserPlus, Settings, Users, BookOpen, DollarSign, Crown, Zap, LogOut, HeartHandshake, PenTool } from 'lucide-react';
 import styled from 'styled-components';
 import DropdownHeader from './UserDropdown/DropdownHeader';
-import { useIsMobile } from '../../../shared/hooks/useIsMobile';
 import type { Theme, UserPlanType, UserPlan, UserStatus, StatusWithDuration } from '../../../shared/types/story';
 
 interface UserProfileDropdownProps {
@@ -42,64 +41,14 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const [menuGlow, setMenuGlow] = useState('');
   const [glowPosition, setGlowPosition] = useState({ x: '50%', y: '50%' });
   const [status, setStatus] = useState<UserStatus>(currentStatus);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const menuPortalRef = useRef<HTMLDivElement>(null);
-  const lastToggleTime = useRef<number>(0);
-  const clickBuffer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isMobile = useIsMobile();
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      const insideTrigger = dropdownRef.current?.contains(target);
-      const insideMenu = menuPortalRef.current?.contains(target);
-      if (!insideTrigger && !insideMenu) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      if (clickBuffer.current) {
-        clearTimeout(clickBuffer.current);
-      }
-    };
-  }, [isOpen]);
-
-  const handleToggleDropdown = () => {
-    try {
-      const now = Date.now();
-      const timeSinceLastToggle = now - lastToggleTime.current;
-      
-      if (timeSinceLastToggle < 300 || isAnimating) return;
-
-      if (clickBuffer.current) {
-        clearTimeout(clickBuffer.current);
-      }
-
-      clickBuffer.current = setTimeout(() => {
-        setIsAnimating(true);
-        setIsOpen(prev => !prev);
-        lastToggleTime.current = now;
-        
-        setTimeout(() => {
-          setIsAnimating(false);
-        }, 400);
-      }, 50);
-    } catch (error) {
-      console.error('Error toggling dropdown:', error);
-    }
-  };
+  const { refs, context } = useFloating({ open: isOpen, onOpenChange: setIsOpen });
+  const click = useClick(context);
+  const dismiss = useDismiss(context);
+  const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss]);
 
   const handleAction = (action?: () => void) => {
     try {
-      if (isAnimating) return;
-      
       action?.();
       setIsOpen(false);
     } catch (error) {
@@ -189,10 +138,10 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const menuItems = getMenuItems();
 
   const menuContent = (
-    <React.Fragment>
+    <FloatingPortal>
       <StyledBackdrop $isOpen={isOpen} onClick={() => setIsOpen(false)} aria-hidden="true" />
 
-      <StyledDropdownMenu $isOpen={isOpen} ref={menuPortalRef}>
+      <StyledDropdownMenu $isOpen={isOpen} ref={refs.setFloating} {...getFloatingProps()}>
         <StyledMenuCard
           className="menu-card"
           $theme={theme}
@@ -249,16 +198,16 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
           </div>
         </StyledMenuCard>
       </StyledDropdownMenu>
-    </React.Fragment>
+    </FloatingPortal>
   );
 
   return (
-    <StyledWrapper $theme={theme} ref={dropdownRef}>
+    <StyledWrapper $theme={theme}>
       <div className="template">
         <button
+          ref={refs.setReference}
+          {...getReferenceProps()}
           className="popup-trigger"
-          onClick={handleToggleDropdown}
-          disabled={isAnimating}
         >
           <span className="username">{userName}</span>
           <div className="avatar-container">
@@ -282,11 +231,9 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
             <div className={`status-badge ${getStatusBadgeClass(status)}`}></div>
           </div>
         </button>
-
-        {!isMobile && menuContent}
       </div>
 
-      {isMobile && createPortal(menuContent, document.body)}
+      {menuContent}
     </StyledWrapper>
   );
 };
@@ -375,77 +322,6 @@ const StyledWrapper = styled.div<{ $theme: Theme }>`
     &.status-invisible { background-color: #6b7280; }
   }
 
-  .section-title {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 6px 12px 2px 12px;
-    margin-top: 4px;
-    margin-bottom: 2px;
-  }
-
-  .menu-items {
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .menu-divider {
-    height: 1px;
-    background: ${props => props.$theme === 'dark' 
-      ? 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)'
-      : 'linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent)'};
-    margin: 6px 0;
-  }
-
-  .menu-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 8px 12px;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 2;
-
-    &:hover {
-      transform: translateX(2px);
-
-      .item-icon {
-        color: var(--item-hover-color, ${props => props.$theme === 'dark' ? '#818cf8' : '#6366f1'});
-        transform: scale(1.05);
-      }
-
-      .item-label {
-        color: ${props => props.$theme === 'dark' ? '#f1f5f9' : '#1e293b'};
-      }
-    }
-
-    &:active {
-      transform: translateX(2px) scale(0.98);
-    }
-  }
-
-  .item-icon {
-    color: var(--item-color, ${props => props.$theme === 'dark' ? '#94a3b8' : '#64748b'});
-    transition: all 0.3s ease;
-  }
-
-  .item-label {
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: ${props => props.$theme === 'dark' ? '#e2e8f0' : '#334155'};
-    transition: all 0.3s ease;
-  }
 `;
 
 const StyledBackdrop = styled.div<{ $isOpen: boolean }>`
@@ -596,6 +472,78 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
   > * {
     position: relative;
     z-index: 2;
+  }
+
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 6px 12px 2px 12px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }
+
+  .menu-items {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .menu-divider {
+    height: 1px;
+    background: ${props => props.$theme === 'dark'
+      ? 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)'
+      : 'linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent)'};
+    margin: 6px 0;
+  }
+
+  .menu-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+
+    &:hover {
+      transform: translateX(2px);
+
+      .item-icon {
+        color: var(--item-hover-color, ${props => props.$theme === 'dark' ? '#818cf8' : '#6366f1'});
+        transform: scale(1.05);
+      }
+
+      .item-label {
+        color: ${props => props.$theme === 'dark' ? '#f1f5f9' : '#1e293b'};
+      }
+    }
+
+    &:active {
+      transform: translateX(2px) scale(0.98);
+    }
+  }
+
+  .item-icon {
+    color: var(--item-color, ${props => props.$theme === 'dark' ? '#94a3b8' : '#64748b'});
+    transition: all 0.3s ease;
+  }
+
+  .item-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: ${props => props.$theme === 'dark' ? '#e2e8f0' : '#334155'};
+    transition: all 0.3s ease;
   }
 `;
 

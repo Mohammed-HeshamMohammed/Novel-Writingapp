@@ -128,7 +128,7 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
               <h1 className={`text-lg font-bold ${styles.text} sm:hidden`}>N</h1>
             </div>
 
-            <div className="hidden md:block flex-1 max-w-sm mx-4">
+            <div className="hidden lg:block flex-1 max-w-sm mx-4">
               <div className="relative">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${styles.textSecondary} w-4 h-4`} />
                 <input
@@ -141,11 +141,11 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center space-x-1 md:space-x-2">
+            <div className="flex items-center space-x-1 lg:space-x-2">
               <TooltipButton
                 tooltip="Create New Story"
                 onClick={handleNewStoryClick}
-                className="hidden md:inline-flex items-center px-3 py-1.5 text-sm font-medium border border-transparent rounded-full text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="hidden lg:inline-flex items-center px-3 py-1.5 text-sm font-medium border border-transparent rounded-full text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 theme={theme}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +162,7 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
                 />
               )}
 
-              <div className="hidden md:block">
+              <div className="hidden lg:block">
                 <NotificationsDropdown
                   theme={theme}
                   notifications={notifications}
@@ -196,24 +196,26 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
               />
             </div>
           </div>
-
-          {showMobileSearch && (
-            <div className="md:hidden pb-3">
-              <div className="relative">
-                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${styles.textSecondary} w-4 h-4`} />
-                <input
-                  type="text"
-                  autoFocus
-                  placeholder="Search stories..."
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange?.(e.target.value)}
-                  className={`w-full pl-9 pr-3 py-2 text-sm border rounded-full ${styles.input} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </nav>
+
+      {showMobileSearch && (
+        <div className="lg:hidden fixed top-20 left-1/2 transform -translate-x-1/2 z-40 w-[95vw] max-w-4xl">
+          <div className={`rounded-full shadow-lg ${styles.nav} border px-4 py-2.5`}>
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${styles.textSecondary} w-4 h-4`} />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search stories..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                className={`w-full pl-9 pr-3 py-1.5 text-sm border-none bg-transparent focus:outline-none ${styles.text} ${theme === 'dark' ? 'placeholder-gray-400' : 'placeholder-gray-500'}`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="h-20"></div>
 
@@ -222,6 +224,9 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
         showMobileSearch={showMobileSearch}
         onToggleSearch={() => setShowMobileSearch(prev => !prev)}
         onNewStoryClick={handleNewStoryClick}
+        onProfileClick={() => handleAction(onProfileClick)}
+        onMyCharactersClick={() => handleAction(onMyCharactersClick)}
+        onSettingsClick={() => handleAction(onSettingsClick)}
         notifications={notifications}
         onNotificationClick={(id: string) => handleAction(() => onNotificationClick?.(id))}
         onMarkAllNotificationsRead={() => handleAction(onMarkAllNotificationsRead)}

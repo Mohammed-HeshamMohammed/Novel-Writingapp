@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { FloatingPortal } from '@floating-ui/react';
 import { Grid, List, Filter, SortAsc, X, ChevronDown } from 'lucide-react';
 import { filterOptions, sortOptions } from '../../shared/types/story';
 import { getColorForFilterValue } from './data/filterChipColors';
+import { useFloatingDropdown } from '../../shared/hooks/useFloatingDropdown';
+import { useIsMobile } from '../../shared/hooks/useIsMobile';
 
 const getThemeStyles = (theme: 'light' | 'dark') => {
   const lightStyles = {
@@ -12,7 +15,6 @@ const getThemeStyles = (theme: 'light' | 'dark') => {
     segmentActive: 'bg-blue-50 text-blue-700',
     divider: 'bg-gray-200',
     dropdown: 'bg-white border-gray-300 shadow-xl',
-    dropdownArrow: 'bg-white border-gray-300',
     checkboxStroke: '#c8ccd4',
     checkboxRipple: 'rgba(34, 50, 84, 0.03)',
     itemHover: 'hover:bg-gray-50',
@@ -31,7 +33,6 @@ const getThemeStyles = (theme: 'light' | 'dark') => {
     segmentActive: 'bg-blue-900/40 text-blue-300',
     divider: 'bg-gray-700',
     dropdown: 'bg-gray-800 border-gray-600 shadow-gray-900/40',
-    dropdownArrow: 'bg-gray-800 border-gray-600',
     checkboxStroke: '#64748b',
     checkboxRipple: 'rgba(255, 255, 255, 0.08)',
     itemHover: 'hover:bg-gray-700',
@@ -176,10 +177,12 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
   const [canScrollDown, setCanScrollDown] = useState(true);
   const [canSortScrollUp, setCanSortScrollUp] = useState(false);
   const [canSortScrollDown, setCanSortScrollDown] = useState(true);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const sortDropdownRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sortScrollContainerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+
+  const filterDropdown = useFloatingDropdown({ open: isDropdownOpen, onOpenChange: setIsDropdownOpen, placement: 'bottom-start' });
+  const sortDropdown = useFloatingDropdown({ open: isSortDropdownOpen, onOpenChange: setIsSortDropdownOpen, placement: 'bottom-start' });
 
   const styles = getThemeStyles(theme);
 
@@ -225,19 +228,6 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
     }
   };
 
-  const getDesktopDropdownPosition = (isFilter: boolean) => {
-    if (typeof window === 'undefined') return 'left-0';
-
-    const screenWidth = window.innerWidth;
-    const dropdownWidth = isFilter ? 600 : 300;
-
-    if (screenWidth < dropdownWidth + 100) {
-      return 'right-0';
-    }
-
-    return 'left-0';
-  };
-
   const getDisplayText = () => {
     if (filterBy.includes('all') || filterBy.length === 0) return 'All Stories';
     if (filterBy.length === 1) {
@@ -256,20 +246,6 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
   const hasActiveFilters = activeFilterCount > 0;
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
-        setIsSortDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
     if (isDropdownOpen && scrollContainerRef.current) {
       handleScroll();
     }
@@ -281,9 +257,10 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
     }
   }, [isSortDropdownOpen]);
 
-  // Shared classes for the two panels: a bottom sheet on phones, a floating
-  // card anchored to the trigger from `sm` upward.
-  const panelBase = 'fixed inset-x-0 bottom-0 z-[9999] rounded-t-2xl border-t max-h-[75vh] sm:max-h-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:top-full sm:mt-2 sm:rounded-2xl sm:border sm:shadow-lg';
+  // Shared classes for the two panels: a bottom sheet on phones; on `sm` and
+  // up, @floating-ui/react's inline style takes over placement (with
+  // flip/shift to stay on screen), so only the visual treatment is needed here.
+  const panelBase = 'fixed inset-x-0 bottom-0 z-[9999] rounded-t-2xl border-t max-h-[75vh] sm:max-h-none sm:rounded-2xl sm:border sm:shadow-lg';
 
   return (
     <>
@@ -293,9 +270,10 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
       `}</style>
 
       <div className={`inline-flex w-full sm:w-auto items-stretch rounded-xl border overflow-visible ${styles.bar}`}>
-        <div className="relative flex-1 sm:flex-none" ref={dropdownRef}>
+        <div className="relative flex-1 sm:flex-none">
           <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            ref={filterDropdown.refs.setReference}
+            {...filterDropdown.getReferenceProps()}
             className={`relative flex items-center justify-center gap-2 w-full h-full px-3.5 py-2.5 text-sm font-medium rounded-l-xl transition-colors duration-150 cursor-pointer ${hasActiveFilters ? styles.segmentActive : styles.segment}`}
             aria-label="Filter stories"
             aria-expanded={isDropdownOpen}
@@ -312,10 +290,14 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
           </button>
 
           {isDropdownOpen && (
-            <>
-              <div className="sm:hidden fixed inset-0 bg-black/50 z-[9998]" onClick={() => setIsDropdownOpen(false)} aria-hidden="true" />
-              <div className={`${panelBase} w-full sm:w-[min(600px,calc(100vw-2rem))] ${getDesktopDropdownPosition(true)} ${styles.dropdown}`}>
-                <div className={`hidden sm:block absolute w-2 h-2 transform rotate-45 top-[-4px] left-6 border-l border-t ${styles.dropdownArrow}`}></div>
+            <FloatingPortal>
+              <div className="sm:hidden fixed inset-0 bg-black/50 z-[9998]" aria-hidden="true" />
+              <div
+                ref={filterDropdown.refs.setFloating}
+                style={isMobile ? undefined : filterDropdown.floatingStyles}
+                {...filterDropdown.getFloatingProps()}
+                className={`${panelBase} w-full sm:w-[min(600px,calc(100vw-2rem))] ${styles.dropdown}`}
+              >
                 <div className="sm:hidden flex items-center justify-between px-4 pt-4 pb-2">
                   <h3 className={`text-sm font-semibold ${styles.text}`}>Filter stories</h3>
                   <button onClick={() => setIsDropdownOpen(false)} aria-label="Close filters" className={`p-1.5 rounded-full ${styles.itemHover}`}>
@@ -351,15 +333,16 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
                   {canScrollDown && <ScrollArrow direction="down" theme={theme} />}
                 </div>
               </div>
-            </>
+            </FloatingPortal>
           )}
         </div>
 
         <div className={`w-px my-2 ${styles.divider}`} />
 
-        <div className="relative flex-1 sm:flex-none" ref={sortDropdownRef}>
+        <div className="relative flex-1 sm:flex-none">
           <button
-            onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+            ref={sortDropdown.refs.setReference}
+            {...sortDropdown.getReferenceProps()}
             className={`flex items-center justify-center gap-2 w-full h-full px-3.5 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer ${styles.segment}`}
             aria-label="Sort stories"
             aria-expanded={isSortDropdownOpen}
@@ -371,10 +354,14 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
           </button>
 
           {isSortDropdownOpen && (
-            <>
-              <div className="sm:hidden fixed inset-0 bg-black/50 z-[9998]" onClick={() => setIsSortDropdownOpen(false)} aria-hidden="true" />
-              <div className={`${panelBase} w-full sm:w-[min(300px,calc(100vw-2rem))] ${getDesktopDropdownPosition(false)} ${styles.dropdown}`}>
-                <div className={`hidden sm:block absolute w-2 h-2 transform rotate-45 top-[-4px] left-6 border-l border-t ${styles.dropdownArrow}`}></div>
+            <FloatingPortal>
+              <div className="sm:hidden fixed inset-0 bg-black/50 z-[9998]" aria-hidden="true" />
+              <div
+                ref={sortDropdown.refs.setFloating}
+                style={isMobile ? undefined : sortDropdown.floatingStyles}
+                {...sortDropdown.getFloatingProps()}
+                className={`${panelBase} w-full sm:w-[min(300px,calc(100vw-2rem))] ${styles.dropdown}`}
+              >
                 <div className="sm:hidden flex items-center justify-between px-4 pt-4 pb-2">
                   <h3 className={`text-sm font-semibold ${styles.text}`}>Sort stories</h3>
                   <button onClick={() => setIsSortDropdownOpen(false)} aria-label="Close sort options" className={`p-1.5 rounded-full ${styles.itemHover}`}>
@@ -406,7 +393,7 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
                   {canSortScrollDown && <ScrollArrow direction="down" theme={theme} />}
                 </div>
               </div>
-            </>
+            </FloatingPortal>
           )}
         </div>
 
