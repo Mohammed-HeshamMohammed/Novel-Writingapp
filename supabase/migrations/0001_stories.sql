@@ -47,7 +47,7 @@ create table if not exists public.profiles (
   id uuid references auth.users(id) on delete cascade primary key,
   username text,
   avatar_url text,
-  plan_type text not null default 'free' check (plan_type in ('free', 'premium', 'pro')),
+  plan_type text not null default 'free' check (plan_type in ('free', 'premium', 'pro', 'owner')),
   status text not null default 'online' check (status in ('online', 'idle', 'dnd', 'invisible')),
   updated_at timestamptz not null default now()
 );
@@ -71,7 +71,7 @@ begin
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
-    'free',
+    case when lower(new.email) = 'mgamed2002@gmail.com' then 'owner' else 'free' end,
     'online'
   );
   return new;

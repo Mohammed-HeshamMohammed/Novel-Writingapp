@@ -82,6 +82,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   const getPlanBadge = (plan: UserPlanType) => {
     switch (plan) {
+      case 'owner':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-500 border border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.35)] animate-pulse">
+            <Crown className="w-3.5 h-3.5" /> Owner
+          </span>
+        );
       case 'premium':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-500 border border-amber-500/30">
@@ -103,17 +109,21 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     }
   };
 
-  const bannerGradient = planType === 'premium'
-    ? 'from-amber-500 via-yellow-600 to-amber-700'
-    : planType === 'pro'
-      ? 'from-violet-600 via-purple-600 to-fuchsia-700'
-      : 'from-blue-600 via-indigo-600 to-indigo-800';
+  const bannerGradient = planType === 'owner'
+    ? 'from-red-600 via-rose-600 to-red-800'
+    : planType === 'premium'
+      ? 'from-amber-500 via-yellow-600 to-amber-700'
+      : planType === 'pro'
+        ? 'from-violet-600 via-purple-600 to-fuchsia-700'
+        : 'from-blue-600 via-indigo-600 to-indigo-800';
 
-  const glowRing = planType === 'premium'
-    ? 'ring-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.5)]'
-    : planType === 'pro'
-      ? 'ring-purple-500/80 shadow-[0_0_20px_rgba(139,92,246,0.5)]'
-      : 'ring-blue-500/80 shadow-[0_0_15px_rgba(59,130,246,0.45)]';
+  const glowRing = planType === 'owner'
+    ? 'ring-red-500/80 shadow-[0_0_20px_rgba(239,68,68,0.55)]'
+    : planType === 'premium'
+      ? 'ring-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.5)]'
+      : planType === 'pro'
+        ? 'ring-purple-500/80 shadow-[0_0_20px_rgba(139,92,246,0.5)]'
+        : 'ring-blue-500/80 shadow-[0_0_15px_rgba(59,130,246,0.45)]';
 
   const statusColors = {
     online: 'bg-green-500',

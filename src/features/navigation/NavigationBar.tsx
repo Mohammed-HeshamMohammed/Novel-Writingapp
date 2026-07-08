@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HomeNavBar } from './home/HomeNavBar';
 import { EditorNavBar } from './editor/EditorNavBar';
 import { getStoredTheme, storeTheme } from './utils/themeUtils';
-import type { WritingMode, Theme } from '../../shared/types/story';
+import type { WritingMode, Theme, UserPlanType, UserStatus } from '../../shared/types/story';
 
 interface NavigationBarProps {
   mode: 'home' | 'editor';
@@ -29,8 +29,8 @@ interface NavigationBarProps {
   themeToggleDebounceMs?: number;
   userName?: string;
   userAvatar?: string;
-  userPlan?: 'free' | 'premium' | 'pro';
-  userStatus?: 'online' | 'idle' | 'dnd' | 'invisible';
+  userPlan?: UserPlanType;
+  userStatus?: UserStatus;
   notifications?: Array<{
     id: string;
     type: 'comment' | 'like' | 'follow' | 'story' | 'system';

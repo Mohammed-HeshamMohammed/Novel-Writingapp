@@ -110,6 +110,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
 
   const getPlanInfo = (): UserPlan => {
     const planConfigs = {
+      owner: { plan: 'owner' as const, icon: Crown, label: 'Owner', color: '#f43f5e', upgradeText: 'Creator Mode', bgColor: 'bg-rose-100 dark:bg-rose-950/30', textColor: 'text-rose-800 dark:text-rose-400', borderColor: 'border-rose-300 dark:border-rose-900/50' },
       premium: { plan: 'premium' as const, icon: Crown, label: 'Premium', color: '#ffd700', upgradeText: 'Upgrade or Extend Plan', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', borderColor: 'border-yellow-300' },
       pro: { plan: 'pro' as const, icon: Zap, label: 'Pro', color: '#8b5cf6', upgradeText: 'TOP VIP', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
       free: { plan: 'free' as const, icon: User, label: 'Free', color: '#6b7280', upgradeText: 'Go Premium', bgColor: 'bg-gray-100', textColor: 'text-gray-700', borderColor: 'border-gray-300' }
@@ -119,7 +120,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   };
 
   const getPricingLabel = () => {
-    const labels = { premium: 'Pricing', pro: 'Extend Plan', free: 'Pricing' };
+    const labels = { owner: 'Pricing', premium: 'Pricing', pro: 'Extend Plan', free: 'Pricing' };
     return labels[userPlan];
   };
 
@@ -144,7 +145,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
       { icon: LogOut, label: 'Sign Out', action: callbacks.onLogoutClick, color: '#ef4444', hoverColor: '#dc2626', glowClass: 'glow-red' }
     ];
 
-    if (userPlan === 'pro') {
+    if (userPlan === 'pro' || userPlan === 'owner') {
       baseItems.splice(-3, 0, { icon: Zap, label: 'Request Feature', action: () => {}, color: '#8b5cf6', hoverColor: '#7c3aed', glowClass: 'glow-purple' });
     }
 
@@ -485,6 +486,7 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
 
   ${props => {
     const planGlowColors = {
+      owner: { primary: 'rgba(244, 63, 94, 0.55)', bright: 'rgba(244, 63, 94, 0.85)' },
       premium: { primary: 'rgba(251, 191, 36, 0.45)', bright: 'rgba(251, 191, 36, 0.75)' },
       pro: { primary: 'rgba(139, 92, 246, 0.45)', bright: 'rgba(167, 139, 250, 0.75)' },
       free: { primary: 'rgba(59, 130, 246, 0.3)', bright: 'rgba(96, 165, 250, 0.6)' }

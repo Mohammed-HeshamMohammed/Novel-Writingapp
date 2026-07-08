@@ -185,7 +185,7 @@ export interface StatusOption {
   color: string;
 }
 
-export type UserPlanType = 'free' | 'premium' | 'pro';
+export type UserPlanType = 'free' | 'premium' | 'pro' | 'owner';
 
 export interface UserPlan {
   plan: UserPlanType;
