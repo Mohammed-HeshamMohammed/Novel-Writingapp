@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   X, User, Crown, Zap, Trash2, Plus, 
-  Check, Globe, Activity, Eye, Sliders 
+  Check, Globe, Activity, Eye, Sliders,
+  Mail, PenSquare, ArrowLeft
 } from 'lucide-react';
 import type { Theme, UserPlanType, UserStatus } from '../../../shared/types/story';
 
@@ -66,6 +67,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [avatarUrl, setAvatarUrl] = useState(initialAvatar || '');
   const [status, setStatus] = useState<UserStatus>(initialStatus);
   const [isSaved, setIsSaved] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const isDark = theme === 'dark';
 
   const handleSave = (e: React.FormEvent) => {
@@ -74,7 +76,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     setIsSaved(true);
     setTimeout(() => {
       setIsSaved(false);
-      onClose();
+      setIsEditing(false);
     }, 1000);
   };
 
@@ -82,116 +84,231 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     switch (plan) {
       case 'premium':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-500 border border-yellow-500/30">
-            <Crown className="w-3 h-3" /> Premium
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-500 border border-amber-500/30">
+            <Crown className="w-3.5 h-3.5" /> Premium
           </span>
         );
       case 'pro':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">
-            <Zap className="w-3 h-3" /> Pro
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">
+            <Zap className="w-3.5 h-3.5" /> Pro
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400 border border-gray-500/30">
-            <User className="w-3 h-3" /> Free
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+            <User className="w-3.5 h-3.5" /> Free Tier
           </span>
         );
     }
   };
 
+  const bannerGradient = planType === 'premium'
+    ? 'from-amber-500 via-yellow-600 to-amber-700'
+    : planType === 'pro'
+      ? 'from-violet-600 via-purple-600 to-fuchsia-700'
+      : 'from-blue-600 via-indigo-600 to-indigo-800';
+
+  const glowRing = planType === 'premium'
+    ? 'ring-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.5)]'
+    : planType === 'pro'
+      ? 'ring-purple-500/80 shadow-[0_0_20px_rgba(139,92,246,0.5)]'
+      : 'ring-blue-500/80 shadow-[0_0_15px_rgba(59,130,246,0.45)]';
+
+  const statusColors = {
+    online: 'bg-green-500',
+    idle: 'bg-yellow-500',
+    dnd: 'bg-red-500',
+    invisible: 'bg-gray-400'
+  };
+
+  const statusLabel = {
+    online: '🟢 Online',
+    idle: '🌙 Idle',
+    dnd: '🔴 Do Not Disturb',
+    invisible: '⚪ Invisible'
+  };
+
   return (
-    <ModalWrapper theme={theme} title="Edit User Profile" onClose={onClose}>
-      <form onSubmit={handleSave} className="space-y-4">
-        {/* Plan & Email View */}
-        <div className={`p-4 rounded-xl border flex items-center justify-between ${
-          isDark ? 'bg-gray-800/40 border-gray-800' : 'bg-gray-50 border-gray-200'
-        }`}>
-          <div className="space-y-1">
-            <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Account Email</p>
-            <p className="text-sm font-medium">{email || 'offline_user@novelist.app'}</p>
-          </div>
-          <div>{getPlanBadge(planType)}</div>
-        </div>
-
-        {/* Username field */}
-        <div className="space-y-1.5">
-          <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Display Username</label>
+    <ModalWrapper theme={theme} title={isEditing ? "Edit Profile Settings" : "Creator Profile"} onClose={onClose}>
+      {!isEditing ? (
+        <div className="space-y-6">
+          {/* Cover Banner */}
           <div className="relative">
-            <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
-            <input 
-              type="text" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              placeholder="Username"
-              className={`w-full pl-10 pr-4 py-2 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
-                isDark 
-                  ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500' 
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-              }`}
-            />
+            <div className={`h-24 w-full rounded-xl bg-gradient-to-r ${bannerGradient} shadow-inner`} />
+            
+            {/* Avatar centered on banner border */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-10">
+              <div className="relative">
+                {initialAvatar ? (
+                  <img 
+                    src={initialAvatar} 
+                    alt={username} 
+                    className={`w-20 h-20 rounded-full object-cover ring-4 bg-gray-905 ${glowRing}`}
+                  />
+                ) : (
+                  <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold ring-4 text-white bg-gradient-to-br from-indigo-500 to-purple-600 ${glowRing}`}>
+                    {username ? username.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
+                {/* Status Dot */}
+                <span className={`absolute bottom-0 right-0 block h-5 w-5 rounded-full border-2 ${isDark ? 'border-gray-950' : 'border-white'} ${statusColors[status]}`} />
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Avatar URL field */}
-        <div className="space-y-1.5">
-          <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Avatar Image URL</label>
-          <div className="relative">
-            <Globe className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
-            <input 
-              type="url" 
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://example.com/avatar.png"
-              className={`w-full pl-10 pr-4 py-2 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
-                isDark 
-                  ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500' 
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-              }`}
-            />
+          {/* Profile Name Header */}
+          <div className="text-center pt-8 space-y-1.5">
+            <h3 className="text-xl font-bold tracking-tight">{username}</h3>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} flex items-center justify-center gap-1`}>
+              <Mail className="w-3.5 h-3.5 inline" /> {email || 'offline_user@novelist.app'}
+            </p>
+            <div className="flex justify-center pt-1.5">{getPlanBadge(planType)}</div>
           </div>
-        </div>
 
-        {/* Status selection */}
-        <div className="space-y-1.5">
-          <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Current Status</label>
-          <div className="relative">
-            <Activity className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as UserStatus)}
-              className={`w-full pl-10 pr-4 py-2 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+          {/* User Stats Widgets */}
+          <div className="grid grid-cols-3 gap-2.5 pt-2">
+            <div className={`p-3 rounded-xl border text-center ${isDark ? 'bg-gray-800/40 border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
+              <span className={`text-lg font-bold block ${isDark ? 'text-white' : 'text-gray-900'}`}>5</span>
+              <span className={`text-[10px] font-medium ${isDark ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider`}>Stories</span>
+            </div>
+            <div className={`p-3 rounded-xl border text-center ${isDark ? 'bg-gray-800/40 border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
+              <span className={`text-lg font-bold block ${isDark ? 'text-white' : 'text-gray-900'}`}>12</span>
+              <span className={`text-[10px] font-medium ${isDark ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider`}>Characters</span>
+            </div>
+            <div className={`p-3 rounded-xl border text-center flex flex-col justify-center items-center ${isDark ? 'bg-gray-800/40 border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
+              <span className="text-xs font-semibold block text-blue-500">{statusLabel[status].split(' ')[1]}</span>
+              <span className={`text-[10px] font-medium ${isDark ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider mt-1`}>Status</span>
+            </div>
+          </div>
+
+          {/* Preferences Link & Action */}
+          <div className="pt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="flex-1 py-2.5 px-4 text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md shadow-blue-500/10"
+            >
+              <PenSquare className="w-4 h-4" /> Edit Profile
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className={`py-2.5 px-4 text-sm font-semibold rounded-xl border transition-all active:scale-95 ${
                 isDark 
-                  ? 'bg-gray-800/50 border-gray-700 text-white' 
-                  : 'bg-white border-gray-300 text-gray-900'
+                  ? 'bg-gray-800/40 border-gray-700 hover:bg-gray-800 text-gray-300' 
+                  : 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700'
               }`}
             >
-              <option value="online">🟢 Online</option>
-              <option value="idle">🌙 Idle</option>
-              <option value="dnd">🔴 Do Not Disturb</option>
-              <option value="invisible">⚪ Invisible</option>
-            </select>
+              Done
+            </button>
           </div>
         </div>
+      ) : (
+        <form onSubmit={handleSave} className="space-y-4">
+          {/* Header Switch */}
+          <div className="flex items-center gap-2 pb-2">
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className={`p-1.5 rounded-lg transition-colors ${
+                isDark ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <span className="text-sm font-semibold">Back to profile card</span>
+          </div>
 
-        {/* Save button */}
-        <div className="pt-2">
-          <button 
-            type="submit" 
-            className={`w-full py-2.5 text-sm font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
-              isSaved 
-                ? 'bg-green-600 hover:bg-green-700 text-white' 
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/10'
-            }`}
-          >
-            {isSaved ? (
-              <span className="flex items-center justify-center gap-1.5"><Check className="w-4 h-4" /> Profile Updated!</span>
-            ) : 'Save Changes'}
-          </button>
-        </div>
-      </form>
+          {/* Username field */}
+          <div className="space-y-1.5">
+            <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Display Username</label>
+            <div className="relative">
+              <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
+              <input 
+                type="text" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                placeholder="Username"
+                className={`w-full pl-10 pr-4 py-2 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+                  isDark 
+                    ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
+              />
+            </div>
+          </div>
+
+          {/* Avatar URL field */}
+          <div className="space-y-1.5">
+            <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Avatar Image URL</label>
+            <div className="relative">
+              <Globe className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
+              <input 
+                type="url" 
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                placeholder="https://example.com/avatar.png"
+                className={`w-full pl-10 pr-4 py-2 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+                  isDark 
+                    ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
+              />
+            </div>
+          </div>
+
+          {/* Status selection */}
+          <div className="space-y-1.5">
+            <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Current Status</label>
+            <div className="relative">
+              <Activity className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as UserStatus)}
+                className={`w-full pl-10 pr-4 py-2 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+                  isDark 
+                    ? 'bg-gray-800/50 border-gray-700 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+              >
+                <option value="online">🟢 Online</option>
+                <option value="idle">🌙 Idle</option>
+                <option value="dnd">🔴 Do Not Disturb</option>
+                <option value="invisible">⚪ Invisible</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Save button */}
+          <div className="pt-2 flex gap-2">
+            <button 
+              type="submit" 
+              className={`flex-1 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+                isSaved 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/10'
+              }`}
+            >
+              {isSaved ? (
+                <span className="flex items-center justify-center gap-1.5"><Check className="w-4 h-4" /> Profile Updated!</span>
+              ) : 'Save Changes'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className={`py-2.5 px-4 text-sm font-semibold rounded-xl border transition-all active:scale-95 ${
+                isDark 
+                  ? 'bg-gray-800/40 border-gray-700 hover:bg-gray-800 text-gray-300' 
+                  : 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700'
+              }`}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
     </ModalWrapper>
   );
 };
@@ -231,104 +348,125 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ theme, onClose }) 
     }, 1000);
   };
 
+  const renderToggle = (label: string, desc: string, value: boolean, onChange: (v: boolean) => void) => {
+    return (
+      <div className={`flex items-center justify-between p-3.5 rounded-xl border ${
+        isDark ? 'bg-gray-800/25 border-gray-800/80' : 'bg-gray-50/70 border-gray-200'
+      }`}>
+        <div className="space-y-0.5 pr-2">
+          <label className="text-sm font-semibold tracking-tight block">{label}</label>
+          <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{desc}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange(!value)}
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+            value ? 'bg-blue-600' : isDark ? 'bg-gray-800' : 'bg-gray-200'
+          }`}
+        >
+          <span
+            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              value ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </div>
+    );
+  };
+
   return (
     <ModalWrapper theme={theme} title="Writing Preferences" onClose={onClose}>
       <form onSubmit={handleSave} className="space-y-5">
         
         {/* Toggle options */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">Auto-save Content</label>
-              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Automatically save to cloud/storage</p>
-            </div>
-            <input 
-              type="checkbox" 
-              checked={autoSave} 
-              onChange={(e) => setAutoSave(e.target.checked)}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500/40"
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">Active Spell Check</label>
-              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Highlight typos and spelling errors</p>
-            </div>
-            <input 
-              type="checkbox" 
-              checked={spellCheck} 
-              onChange={(e) => setSpellCheck(e.target.checked)}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500/40"
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">Soft Word Wrap</label>
-              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Wraps long lines to fit your viewport</p>
-            </div>
-            <input 
-              type="checkbox" 
-              checked={wordWrap} 
-              onChange={(e) => setWordWrap(e.target.checked)}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500/40"
-            />
-          </div>
+        <div className="space-y-2.5">
+          {renderToggle("Auto-save Content", "Automatically save to cloud/storage", autoSave, setAutoSave)}
+          {renderToggle("Active Spell Check", "Highlight typos and spelling errors", spellCheck, setSpellCheck)}
+          {renderToggle("Soft Word Wrap", "Wraps long lines to fit your viewport", wordWrap, setWordWrap)}
         </div>
 
         <div className="border-t border-gray-500/10 pt-4 space-y-4">
           {/* Font size */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium flex items-center gap-1.5"><Eye className="w-4 h-4 text-blue-500" /> Editor Font Size</label>
-            <select
-              value={fontSize}
-              onChange={(e) => setFontSize(e.target.value)}
-              className={`w-full px-3 py-2 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
-                isDark 
-                  ? 'bg-gray-800/50 border-gray-700 text-white' 
-                  : 'bg-white border-gray-300 text-gray-900'
-              }`}
-            >
-              <option value="small">Small (14px)</option>
-              <option value="medium">Medium (16px)</option>
-              <option value="large">Large (18px)</option>
-              <option value="xlarge">Extra Large (20px)</option>
-            </select>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold flex items-center gap-1.5"><Eye className="w-4 h-4 text-blue-500" /> Editor Font Size</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { value: 'small', label: 'A', desc: '14px', textStyle: 'text-xs' },
+                { value: 'medium', label: 'A', desc: '16px', textStyle: 'text-sm' },
+                { value: 'large', label: 'A', desc: '18px', textStyle: 'text-base' },
+                { value: 'xlarge', label: 'A', desc: '20px', textStyle: 'text-lg' }
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setFontSize(opt.value)}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all duration-200 active:scale-95 ${
+                    fontSize === opt.value
+                      ? 'bg-blue-600 text-white border-transparent shadow-md'
+                      : isDark
+                        ? 'bg-gray-800/40 border-gray-700 hover:bg-gray-800/80 text-gray-300'
+                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  <span className={`${opt.textStyle} font-bold`}>{opt.label}</span>
+                  <span className="text-[10px] opacity-80 mt-0.5 font-medium">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Font Family */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium flex items-center gap-1.5"><Sliders className="w-4 h-4 text-purple-500" /> Typography Family</label>
-            <select
-              value={fontFamily}
-              onChange={(e) => setFontFamily(e.target.value)}
-              className={`w-full px-3 py-2 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
-                isDark 
-                  ? 'bg-gray-800/50 border-gray-700 text-white' 
-                  : 'bg-white border-gray-300 text-gray-900'
-              }`}
-            >
-              <option value="serif">Georgia (Classic Serif)</option>
-              <option value="sans">System-Ui (Modern Sans)</option>
-              <option value="monospace">Courier (Monospace Draft)</option>
-            </select>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold flex items-center gap-1.5"><Sliders className="w-4 h-4 text-purple-500" /> Typography Family</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 'serif', label: 'Georgia', fontClass: 'font-serif' },
+                { value: 'sans', label: 'Sans-Ui', fontClass: 'font-sans' },
+                { value: 'monospace', label: 'Courier', fontClass: 'font-mono' }
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setFontFamily(opt.value)}
+                  className={`p-3 rounded-xl border transition-all duration-200 text-center active:scale-95 ${
+                    fontFamily === opt.value
+                      ? 'bg-purple-600 text-white border-transparent shadow-md'
+                      : isDark
+                        ? 'bg-gray-800/40 border-gray-700 hover:bg-gray-800/80 text-gray-300'
+                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  <span className={`text-xs block font-bold ${opt.fontClass}`}>{opt.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Save button */}
-        <div className="pt-2">
+        <div className="pt-2 flex gap-2">
           <button 
             type="submit" 
-            className={`w-full py-2.5 text-sm font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
               isSaved 
-                ? 'bg-green-600 hover:bg-green-700 text-white' 
+                ? 'bg-green-600 text-white' 
                 : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/10'
             }`}
           >
             {isSaved ? (
               <span className="flex items-center justify-center gap-1.5"><Check className="w-4 h-4" /> Preferences Saved!</span>
-            ) : 'Save Settings'}
+            ) : 'Save Changes'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className={`py-2.5 px-4 text-sm font-semibold rounded-xl border transition-all active:scale-95 ${
+              isDark 
+                ? 'bg-gray-800/40 border-gray-700 hover:bg-gray-800 text-gray-300' 
+                : 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700'
+            }`}
+          >
+            Cancel
           </button>
         </div>
       </form>

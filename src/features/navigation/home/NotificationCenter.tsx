@@ -33,7 +33,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   } = useNotifications(notifications);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         dropdownRef.current && 
         !dropdownRef.current.contains(event.target as Node) &&
@@ -46,7 +46,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      };
     }
   }, [isOpen]);
 
@@ -91,6 +95,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
           <div 
             ref={dropdownRef}
             className={`popup-main ${isOpen ? 'open' : ''}`}
+            onClick={(e) => e.stopPropagation()}
           >
             <NotificationHeader
               unreadCount={unreadCount}
@@ -102,7 +107,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
               <>
                 <NotificationsList
                   notifications={displayNotifications}
-                  onNotificationClick={onNotificationClick}
+                  onNotificationClick={(id) => {
+                    onNotificationClick?.(id);
+                    setIsOpen(false);
+                  }}
                 />
                 <NotificationFooter onClearAll={handleClearAll} />
               </>

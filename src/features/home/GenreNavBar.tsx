@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { genres } from './data/genres';
 
 export { genres } from './data/genres';
@@ -19,24 +19,6 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
   height = 'h-12 sm:h-14',
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const updateScrollShadows = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  };
-
-  useEffect(() => {
-    updateScrollShadows();
-    const el = scrollRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver(updateScrollShadows);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const handleGenreClick = (genreId: string) => {
     try {
@@ -50,8 +32,6 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
     ? 'bg-white/60 border-gray-200/60 text-gray-800 shadow-sm'
     : 'bg-gray-900/50 border-gray-800/50 text-white shadow-md';
 
-  const edgeFade = theme === 'light' ? 'from-white/90' : 'from-gray-900/90';
-
   return (
     <>
       <style>{`
@@ -63,13 +43,8 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
       `}</style>
 
       <div className={`${width} ${height} ${themeClasses} relative backdrop-blur-md rounded-2xl border flex items-center`}>
-        {canScrollLeft && (
-          <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-8 rounded-l-2xl bg-gradient-to-r ${edgeFade} to-transparent z-10`} />
-        )}
-
         <div
           ref={scrollRef}
-          onScroll={updateScrollShadows}
           className="flex items-center overflow-x-auto overflow-y-hidden scrollbar-none scroll-smooth snap-x w-full h-full px-2"
         >
           <div className="flex gap-2 min-w-max h-full items-center py-2">
@@ -97,10 +72,6 @@ export const GenreNavBar: React.FC<GenreNavBarProps> = ({
             })}
           </div>
         </div>
-
-        {canScrollRight && (
-          <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-8 rounded-r-2xl bg-gradient-to-l ${edgeFade} to-transparent z-10`} />
-        )}
       </div>
     </>
   );

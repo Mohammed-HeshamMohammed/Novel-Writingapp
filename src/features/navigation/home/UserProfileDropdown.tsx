@@ -211,10 +211,12 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
               }
 
               const IconComponent = item.icon!;
+              const isLongItem = (item.label?.length || 0) > 15;
+              const itemClass = `menu-item ${isLongItem ? 'menu-item-long' : ''}`;
               return (
                 <button
                   key={index}
-                  className="menu-item"
+                  className={itemClass}
                   onClick={() => handleAction(item.action)}
                   onMouseEnter={(e) => handleMouseEnter(item, e)}
                   onMouseLeave={() => setMenuGlow('')}
@@ -463,12 +465,32 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
     opacity: 0;
   }
 
+  @keyframes flashyGlow {
+    0%, 100% {
+      box-shadow: ${props => props.$theme === 'dark'
+        ? '0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+        : '0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)'},
+        0 0 15px var(--glow-color, rgba(59, 130, 246, 0.35)),
+        0 0 30px var(--glow-color, rgba(59, 130, 246, 0.15));
+    }
+    50% {
+      box-shadow: ${props => props.$theme === 'dark'
+        ? '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.15)'
+        : '0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08)'},
+        0 0 25px var(--glow-color, rgba(59, 130, 246, 0.55)),
+        0 0 45px var(--glow-color, rgba(59, 130, 246, 0.25)),
+        0 0 15px var(--glow-color-bright, rgba(139, 92, 246, 0.4));
+    }
+  }
+
   ${props => {
     const planGlowColors = {
-      premium: 'rgba(251, 191, 36, 0.4)',
-      pro: 'rgba(139, 92, 246, 0.4)',
-      free: ''
+      premium: { primary: 'rgba(251, 191, 36, 0.45)', bright: 'rgba(251, 191, 36, 0.75)' },
+      pro: { primary: 'rgba(139, 92, 246, 0.45)', bright: 'rgba(167, 139, 250, 0.75)' },
+      free: { primary: 'rgba(59, 130, 246, 0.3)', bright: 'rgba(96, 165, 250, 0.6)' }
     };
+
+    const colors = planGlowColors[props.$planInfo.plan] || planGlowColors.free;
 
     const glowColors = {
       'glow-red': 'rgba(239, 68, 68, 0.15)',
@@ -480,30 +502,19 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
       'glow-gray': 'rgba(107, 114, 128, 0.15)'
     };
 
-    const planColor = planGlowColors[props.$planInfo.plan];
     const itemColor = glowColors[props.$glow as keyof typeof glowColors];
     
-    if (planColor && (props.$planInfo.plan === 'premium' || props.$planInfo.plan === 'pro')) {
-      return `
-        box-shadow: ${props.$theme === 'dark'
-          ? '0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
-          : '0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)'}, 
-          0 0 30px ${planColor}, 
-          0 0 60px ${planColor.replace('0.4', '0.2')};
-        border: 1px solid ${planColor.replace('0.4', '0.3')};
-        
-        &::before { 
-          background: radial-gradient(ellipse 400px 300px at var(--glow-x, 50%) var(--glow-y, 50%), ${itemColor || planColor.replace('0.4', '0.1')} 0%, ${(itemColor || planColor).replace(/0\.\d+/, '0.05')} 40%, transparent 70%); 
-          opacity: ${itemColor ? 1 : 0.7}; 
-        }
-      `;
-    } else if (itemColor) {
-      return `&::before { 
-        background: radial-gradient(ellipse 300px 200px at var(--glow-x, 50%) var(--glow-y, 50%), ${itemColor} 0%, ${itemColor.replace('0.15', '0.08')} 30%, ${itemColor.replace('0.15', '0.03')} 60%, transparent 80%); 
-        opacity: 1; 
-      }`;
-    }
-    return '';
+    return `
+      --glow-color: ${colors.primary};
+      --glow-color-bright: ${colors.bright};
+      animation: flashyGlow 4s infinite ease-in-out;
+      border: 1px solid ${colors.primary.replace(/0\.\d+/, '0.3')};
+      
+      &::before { 
+        background: radial-gradient(ellipse 400px 300px at var(--glow-x, 50%) var(--glow-y, 50%), ${itemColor || colors.primary.replace(/0\.\d+/, '0.1')} 0%, ${(itemColor || colors.primary).replace(/0\.\d+/, '0.05')} 40%, transparent 70%); 
+        opacity: ${itemColor ? 1 : 0.7}; 
+      }
+    `;
   }}
 
   > * {
@@ -519,6 +530,12 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
     padding: 6px 12px 2px 12px;
     margin-top: 4px;
     margin-bottom: 2px;
+
+    @media (max-width: 640px) {
+      grid-column: span 2;
+      margin-top: 2px;
+      margin-bottom: 1px;
+    }
   }
 
   .menu-items {
@@ -528,6 +545,13 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
     gap: 2px;
     position: relative;
     z-index: 1;
+
+    @media (max-width: 640px) {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      padding: 12px;
+    }
   }
 
   .menu-divider {
@@ -536,6 +560,11 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
       ? 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)'
       : 'linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent)'};
     margin: 6px 0;
+
+    @media (max-width: 640px) {
+      grid-column: span 2;
+      margin: 4px 0;
+    }
   }
 
   .menu-item {
@@ -552,6 +581,17 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
+
+    @media (max-width: 640px) {
+      padding: 6px 10px;
+      gap: 6px;
+    }
+
+    &.menu-item-long {
+      @media (max-width: 640px) {
+        grid-column: span 2;
+      }
+    }
 
     &:hover {
       transform: translateX(2px);

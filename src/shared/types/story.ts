@@ -200,7 +200,6 @@ export interface UserPlan {
 
 export const filterOptions: FilterOptionData[] = [
   { value: 'all', label: 'All Stories', emoji: '📚' },
-  { value: 'bookmarked', label: 'Bookmarked', emoji: '⭐' },
   { value: 'recent', label: 'Recent', emoji: '🕒' },
   { value: 'male', label: 'Male', emoji: '👨‍🦰' },
   { value: 'female', label: 'Female', emoji: '👩‍🦰' },

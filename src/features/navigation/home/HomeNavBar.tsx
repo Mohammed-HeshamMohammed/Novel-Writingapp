@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { ThemeSwitch } from '../shared/ThemeSwitch';
 import { TooltipButton } from '../shared/TooltipButton';
 import { getThemeStyles } from '../utils/themeUtils';
@@ -154,6 +154,24 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
                 <span>New Story</span>
               </TooltipButton>
 
+              {/* Mobile Search Toggle */}
+              <button
+                type="button"
+                onClick={() => setShowMobileSearch(prev => !prev)}
+                className={`lg:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40 select-none ${
+                  theme === 'dark'
+                    ? 'bg-gray-800 hover:bg-gray-700/80 text-gray-400 hover:text-white border border-gray-700'
+                    : 'bg-white hover:bg-gray-100 text-slate-700 hover:text-gray-900 border border-gray-200 shadow-sm'
+                } active:scale-95 flex-shrink-0`}
+                aria-label="Toggle search"
+              >
+                {showMobileSearch ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Search className="w-5 h-5" />
+                )}
+              </button>
+
               {onThemeChange && (
                 <ThemeSwitch
                   theme={theme}
@@ -162,16 +180,14 @@ export const HomeNavBar: React.FC<HomeNavBarProps> = ({
                 />
               )}
 
-              <div className="hidden lg:block">
-                <NotificationsDropdown
-                  theme={theme}
-                  notifications={notifications}
-                  onNotificationClick={(id: string) => handleAction(() => onNotificationClick?.(id))}
-                  onMarkAllRead={() => handleAction(onMarkAllNotificationsRead)}
-                  onClearAll={() => handleAction(onClearAllNotifications)}
-                  onSettingsClick={() => handleAction(onNotificationSettingsClick)}
-                />
-              </div>
+              <NotificationsDropdown
+                theme={theme}
+                notifications={notifications}
+                onNotificationClick={(id: string) => handleAction(() => onNotificationClick?.(id))}
+                onMarkAllRead={() => handleAction(onMarkAllNotificationsRead)}
+                onClearAll={() => handleAction(onClearAllNotifications)}
+                onSettingsClick={() => handleAction(onNotificationSettingsClick)}
+              />
 
               <UpdatedUserProfileDropdown
                 theme={theme}

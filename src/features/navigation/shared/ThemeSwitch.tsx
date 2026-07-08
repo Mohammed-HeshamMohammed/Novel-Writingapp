@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { storeTheme } from '../utils/themeUtils';
+import { Sun, Moon } from 'lucide-react';
 import type { Theme } from '../../../shared/types/story';
 
 interface ThemeSwitchProps {
@@ -40,40 +41,62 @@ export const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
   }, [theme, onThemeChange, debounceMs, isToggling]);
 
   return (
-    <div className="flex items-center">
-      <label className="relative inline-block cursor-pointer" style={{ width: '56px', height: '32px' }}>
-        <input 
-          type="checkbox" 
-          checked={theme === 'dark'}
-          onChange={handleToggle}
-          disabled={isToggling}
-          className="opacity-0 w-0 h-0"
-        />
-        <span 
-          className={`absolute top-0 left-0 right-0 bottom-0 transition-all duration-300 rounded-full ${isToggling ? 'opacity-75' : ''}`}
-          style={{
-            backgroundColor: theme === 'dark' ? '#303136' : '#f4f4f5',
-            border: '1px solid rgba(255,255,255,0.1)'
-          }}
-        >
-          <span 
-            className="absolute rounded-full transition-all duration-300"
-            style={{
-              height: '22.4px',
-              width: '22.4px',
-              left: theme === 'dark' ? 'calc(100% - 27.2px)' : '4.8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: theme === 'dark' 
-                ? '#303136' 
-                : 'linear-gradient(40deg, #ff0080, #ff8c00 70%)',
-              boxShadow: theme === 'dark' 
-                ? 'inset -3px -2px 5px -2px #8983f7, inset -10px -4px 0 0 #a3dafb' 
-                : '0 2px 4px rgba(0,0,0,0.1)'
-            }}
+    <>
+      {/* Mobile & Tablet view: Simple circular icon button */}
+      <button
+        type="button"
+        onClick={handleToggle}
+        disabled={isToggling}
+        className={`lg:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40 select-none ${
+          theme === 'dark'
+            ? 'bg-gray-800 hover:bg-gray-700/80 text-yellow-400 border border-gray-700'
+            : 'bg-white hover:bg-gray-100 text-slate-700 border border-gray-200 shadow-sm'
+        } ${isToggling ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer active:scale-95'}`}
+        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+      >
+        {theme === 'dark' ? (
+          <Sun className="w-5 h-5" />
+        ) : (
+          <Moon className="w-5 h-5" />
+        )}
+      </button>
+
+      {/* Desktop view: Standard slider switch */}
+      <div className="hidden lg:flex items-center">
+        <label className="relative inline-block cursor-pointer" style={{ width: '56px', height: '32px' }}>
+          <input 
+            type="checkbox" 
+            checked={theme === 'dark'}
+            onChange={handleToggle}
+            disabled={isToggling}
+            className="opacity-0 w-0 h-0"
           />
-        </span>
-      </label>
-    </div>
+          <span 
+            className={`absolute top-0 left-0 right-0 bottom-0 transition-all duration-300 rounded-full ${isToggling ? 'opacity-75' : ''}`}
+            style={{
+              backgroundColor: theme === 'dark' ? '#303136' : '#f4f4f5',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}
+          >
+            <span 
+              className="absolute rounded-full transition-all duration-300"
+              style={{
+                height: '22.4px',
+                width: '22.4px',
+                left: theme === 'dark' ? 'calc(100% - 27.2px)' : '4.8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: theme === 'dark' 
+                  ? '#303136' 
+                  : 'linear-gradient(40deg, #ff0080, #ff8c00 70%)',
+                boxShadow: theme === 'dark' 
+                  ? 'inset -3px -2px 5px -2px #8983f7, inset -10px -4px 0 0 #a3dafb' 
+                  : '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            />
+          </span>
+        </label>
+      </div>
+    </>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FloatingPortal } from '@floating-ui/react';
-import { Grid, List, Filter, SortAsc, X, ChevronDown } from 'lucide-react';
+import { Grid, List, Filter, SortAsc, X, ChevronDown, Bookmark } from 'lucide-react';
 import { filterOptions, sortOptions } from '../../shared/types/story';
 import { getColorForFilterValue } from './data/filterChipColors';
 import { useFloatingDropdown } from '../../shared/hooks/useFloatingDropdown';
@@ -228,13 +228,28 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
     }
   };
 
-  const getDisplayText = () => {
-    if (filterBy.includes('all') || filterBy.length === 0) return 'All Stories';
-    if (filterBy.length === 1) {
-      const option = filterOptions.find(opt => opt.value === filterBy[0]);
-      return option?.label || filterBy[0];
+  const handleBookmarkToggle = () => {
+    try {
+      if (filterBy.includes('bookmarked')) {
+        const filtered = filterBy.filter(f => f !== 'bookmarked');
+        onFilterChange(filtered.length ? filtered : ['all']);
+      } else {
+        const filtered = filterBy.includes('all') ? [] : filterBy.filter(f => f !== 'all');
+        onFilterChange([...filtered, 'bookmarked']);
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark filter:', error);
     }
-    return `${filterBy.length} filters selected`;
+  };
+
+  const getDisplayText = () => {
+    const activeFiltersWithoutBookmark = filterBy.filter(f => f !== 'bookmarked' && f !== 'all');
+    if (activeFiltersWithoutBookmark.length === 0) return 'All Stories';
+    if (activeFiltersWithoutBookmark.length === 1) {
+      const option = filterOptions.find(opt => opt.value === activeFiltersWithoutBookmark[0]);
+      return option?.label || activeFiltersWithoutBookmark[0];
+    }
+    return `${activeFiltersWithoutBookmark.length} filters selected`;
   };
 
   const getSortDisplayText = () => {
@@ -242,7 +257,7 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
     return option?.label || sortBy;
   };
 
-  const activeFilterCount = filterBy.includes('all') ? 0 : filterBy.length;
+  const activeFilterCount = filterBy.filter(f => f !== 'all' && f !== 'bookmarked').length;
   const hasActiveFilters = activeFilterCount > 0;
 
   useEffect(() => {
@@ -396,6 +411,20 @@ export const StoryFilters: React.FC<StoryFiltersProps> = ({
             </FloatingPortal>
           )}
         </div>
+
+        <div className={`w-px my-2 ${styles.divider}`} />
+
+        <button
+          onClick={handleBookmarkToggle}
+          className={`flex items-center justify-center gap-2 px-3.5 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer ${
+            filterBy.includes('bookmarked') ? styles.segmentActive : styles.segment
+          }`}
+          aria-label="Filter by bookmarked stories"
+          title="Bookmarked stories"
+        >
+          <Bookmark className={`w-4 h-4 ${filterBy.includes('bookmarked') ? 'text-blue-500 fill-current' : 'text-gray-400 dark:text-gray-500'}`} />
+          <span className="hidden sm:inline">Bookmarked</span>
+        </button>
 
         {hasActiveFilters && (
           <>

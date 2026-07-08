@@ -17,6 +17,15 @@ export const genres: Genre[] = [
   { id: 'mystery', label: 'Mystery', icon: '🔍' },
   { id: 'horror', label: 'Horror', icon: '👻' },
   { id: 'comedy', label: 'Comedy', icon: '😄' },
+  { id: 'action', label: 'Action', icon: '💥' },
+  { id: 'drama', label: 'Drama', icon: '🎭' },
+  { id: 'historical', label: 'Historical', icon: '🏰' },
+  { id: 'magical', label: 'Magical', icon: '🔮' },
+  { id: 'game', label: 'Game', icon: '🎮' },
+  { id: 'vampire', label: 'Vampire', icon: '🧛' },
+  { id: 'werewolf', label: 'Werewolf', icon: '🐺' },
+  { id: 'roleplay', label: 'Roleplay', icon: '🎲' },
+  { id: 'wholesome', label: 'Wholesome', icon: '🌸' },
 ];
 
 export const getGenreLabel = (genreId: string): string =>

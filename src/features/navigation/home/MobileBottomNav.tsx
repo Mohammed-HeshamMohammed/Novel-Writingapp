@@ -1,7 +1,6 @@
 import React from 'react';
 import { Home, Search, Plus, X, Users, Settings, User, type LucideIcon } from 'lucide-react';
 import NotificationsDropdown from './NotificationCenter';
-import { getThemeStyles } from '../utils/themeUtils';
 import { useWindowWidth } from '../../../shared/hooks/useWindowWidth';
 import { getNavTier, getNavWingCountForWidth, type NavItemId } from './data/bottomNavTiers';
 import type { Theme } from '../../../shared/types/story';
@@ -42,7 +41,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onClearAllNotifications,
   onNotificationSettingsClick,
 }) => {
-  const styles = getThemeStyles(theme);
   const width = useWindowWidth();
   const tier = getNavTier(getNavWingCountForWidth(width));
 
@@ -52,6 +50,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       icon: showMobileSearch ? X : Search,
       label: showMobileSearch ? 'Close search' : 'Search',
       onClick: onToggleSearch,
+      active: showMobileSearch,
     },
     characters: { icon: Users, label: 'Characters', onClick: onMyCharactersClick },
     profile: { icon: User, label: 'Profile', onClick: onProfileClick },
@@ -61,7 +60,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const renderItem = (id: NavItemId) => {
     if (id === 'alerts') {
       return (
-        <div key="alerts" className="flex-1 flex flex-col items-center justify-center gap-1">
+        <div key="alerts" className="relative flex items-center justify-center flex-shrink-0">
           <NotificationsDropdown
             theme={theme}
             notifications={notifications}
@@ -71,7 +70,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             onSettingsClick={onNotificationSettingsClick}
             openUpward
           />
-          <span className={`text-[10px] font-medium ${styles.textSecondary}`}>Alerts</span>
         </div>
       );
     }
@@ -85,38 +83,44 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         key={id}
         type="button"
         onClick={item.onClick}
-        className={`flex-1 flex flex-col items-center justify-center gap-1 p-2 rounded-lg ${
-          item.active ? 'text-blue-500' : styles.textSecondary
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 flex-shrink-0 ${
+          item.active 
+            ? 'bg-blue-600 text-white shadow-md' 
+            : theme === 'dark'
+              ? 'hover:bg-gray-800 text-gray-400 hover:text-white'
+              : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 border border-transparent'
         }`}
         aria-label={item.label}
         aria-current={item.active ? 'page' : undefined}
       >
         <Icon className="w-5 h-5" />
-        <span className="text-[10px] font-medium">{item.label}</span>
+        <span className="sr-only">{item.label}</span>
       </button>
     );
   };
 
   return (
-    <nav
-      className={`lg:hidden fixed bottom-0 inset-x-0 z-50 border-t ${styles.nav} pb-[env(safe-area-inset-bottom)]`}
-    >
-      <div className="flex items-stretch h-16 px-2">
+    <div className="lg:hidden fixed bottom-6 left-0 right-0 flex justify-center z-50 px-4">
+      <nav
+        className={`flex items-center justify-center gap-1.5 rounded-full border p-1.5 shadow-lg max-w-full backdrop-blur-md transition-all duration-300 ${
+          theme === 'dark'
+            ? 'border-gray-800 bg-gray-950/85 shadow-black/40 text-white'
+            : 'border-gray-200 bg-white/85 shadow-gray-200/40 text-gray-900'
+        }`}
+      >
         {tier.left.map(renderItem)}
 
-        <div className="flex-1 flex items-center justify-center">
-          <button
-            type="button"
-            onClick={onNewStoryClick}
-            className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg -translate-y-4 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            aria-label="Create New Story"
-          >
-            <Plus className="w-6 h-6" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onNewStoryClick}
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all duration-200 hover:scale-105 active:scale-95 flex-shrink-0"
+          aria-label="Create New Story"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
 
         {tier.right.map(renderItem)}
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 };

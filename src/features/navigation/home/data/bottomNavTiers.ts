@@ -10,9 +10,9 @@ interface NavTier {
 // total item count (wings*2 + 1 for the center Add button) stays odd and
 // symmetric around it at every screen size.
 const NAV_TIERS: Record<number, NavTier> = {
-  1: { left: ['home'], right: ['alerts'] },
-  2: { left: ['home', 'search'], right: ['profile', 'alerts'] },
-  3: { left: ['home', 'search', 'characters'], right: ['settings', 'profile', 'alerts'] },
+  1: { left: ['home', 'characters'], right: ['settings', 'profile'] },
+  2: { left: ['home', 'characters'], right: ['settings', 'profile'] },
+  3: { left: ['home', 'characters'], right: ['settings', 'profile'] },
 };
 
 const MAX_WINGS = 3;

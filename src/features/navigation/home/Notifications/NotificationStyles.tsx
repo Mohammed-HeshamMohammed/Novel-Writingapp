@@ -104,6 +104,15 @@ export const StyledWrapper = styled.div<{ theme: 'light' | 'dark'; isOpen: boole
     z-index: 1000;
     pointer-events: none;
     transform: ${props => props.openUpward ? 'translateY(10px) scale(0.95)' : 'translateY(-10px) scale(0.95)'};
+
+    @media (max-width: 640px) {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      width: calc(100vw - 32px);
+      max-width: none;
+      ${props => props.openUpward ? 'bottom: 80px; top: auto; margin-bottom: 0;' : 'top: 80px; bottom: auto; margin-top: 0;'}
+    }
   }
 
   .popup-main.open {
@@ -111,6 +120,10 @@ export const StyledWrapper = styled.div<{ theme: 'light' | 'dark'; isOpen: boole
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0) scale(1);
+
+    @media (max-width: 640px) {
+      ${props => props.openUpward ? 'margin-bottom: 0;' : 'margin-top: 0;'}
+    }
   }
 
   .notifications-header {

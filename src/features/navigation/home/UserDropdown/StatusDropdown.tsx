@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Circle, CircleSlash, EyeOff, Moon, ChevronLeft } from 'lucide-react';
+import { useFloating, offset, flip, shift, autoUpdate, FloatingPortal } from '@floating-ui/react';
+import { useIsMobile } from '../../../../shared/hooks/useIsMobile';
 import type { Theme, UserStatus, StatusWithDuration, StatusOption } from '../../../../shared/types/story';
 
 interface StatusDropdownProps {
@@ -18,8 +20,20 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<UserStatus>('online');
   const [isAnimating, setIsAnimating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const lastToggleTime = useRef<number>(0);
+  const isMobile = useIsMobile();
+
+  const { refs, floatingStyles } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    placement: 'bottom-start',
+    middleware: [
+      offset(8),
+      flip({ padding: 16 }),
+      shift({ padding: 16 }),
+    ],
+    whileElementsMounted: autoUpdate,
+  });
 
   const statusOptions: StatusOption[] = [
     {
@@ -79,21 +93,25 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({
   };
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const isInsideDropdown = refs.floating.current?.contains(event.target as Node);
+      const isInsideButton = (refs.reference.current as HTMLElement)?.contains(event.target as Node);
+      
+      if (!isInsideDropdown && !isInsideButton) {
         resetState();
       }
     };
 
     if (isOpen || showDurationPicker) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [isOpen, showDurationPicker]);
+  }, [isOpen, showDurationPicker, refs.floating, refs.reference]);
 
   const handleButtonClick = () => {
     try {
@@ -190,10 +208,23 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({
 
   const currentStatusOption = getCurrentStatus();
 
+  const dropdownStyle = isMobile
+    ? {
+        backgroundColor: getDropdownBg(),
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)'
+      }
+    : {
+        ...floatingStyles,
+        backgroundColor: getDropdownBg(),
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)'
+      };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        ref={buttonRef}
+        ref={refs.setReference}
         onClick={handleButtonClick}
         disabled={isAnimating}
         className={`flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 ${getThemeClasses('button')} ${
@@ -205,14 +236,12 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div
-          className={`fixed inset-x-4 top-1/2 -translate-y-1/2 sm:absolute sm:inset-x-auto sm:translate-y-0 sm:left-0 sm:top-full sm:mt-2 w-auto sm:w-80 max-w-full max-h-[80vh] overflow-y-auto rounded-xl border ${getThemeClasses('dropdown')} ${getThemeClasses('shadow')} z-[100000] pointer-events-auto`}
-          style={{
-            backgroundColor: getDropdownBg(),
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)'
-          }}
-        >
+        <FloatingPortal>
+          <div
+            ref={refs.setFloating}
+            style={dropdownStyle}
+            className={`fixed inset-x-4 top-1/2 -translate-y-1/2 ${isMobile ? '' : 'sm:inset-auto'} sm:translate-y-0 sm:w-80 max-w-full max-h-[80vh] overflow-y-auto rounded-xl border ${getThemeClasses('dropdown')} ${getThemeClasses('shadow')} z-[100000] pointer-events-auto`}
+          >
           {showDurationPicker ? (
             <>
               <div className={`flex items-center gap-2 p-4 border-b rounded-t-xl ${getThemeClasses('border')}`}>
@@ -299,6 +328,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({
             </>
           )}
         </div>
+      </FloatingPortal>
       )}
     </div>
   );
