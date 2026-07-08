@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useFloating, useClick, useDismiss, useInteractions, FloatingPortal } from '@floating-ui/react';
+import { useFloating, useClick, useDismiss, useInteractions, FloatingPortal, offset, flip, shift, size, autoUpdate } from '@floating-ui/react';
 import { User, UserPlus, Settings, Users, BookOpen, DollarSign, Crown, Zap, LogOut, HeartHandshake, PenTool } from 'lucide-react';
 import styled from 'styled-components';
 import DropdownHeader from './UserDropdown/DropdownHeader';
+import { useIsMobile } from '../../../shared/hooks/useIsMobile';
 import type { Theme, UserPlanType, UserPlan, UserStatus, StatusWithDuration } from '../../../shared/types/story';
 
 interface UserProfileDropdownProps {
@@ -41,8 +42,29 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const [menuGlow, setMenuGlow] = useState('');
   const [glowPosition, setGlowPosition] = useState({ x: '50%', y: '50%' });
   const [status, setStatus] = useState<UserStatus>(currentStatus);
+  const isMobile = useIsMobile();
 
-  const { refs, context } = useFloating({ open: isOpen, onOpenChange: setIsOpen });
+  const { refs, x, y, strategy, context } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    placement: 'bottom-end',
+    middleware: [
+      offset(8),
+      flip({ padding: 16 }),
+      shift({ padding: 16 }),
+      size({
+        padding: 16,
+        apply({ availableHeight, elements }) {
+          // Exposed as a custom property (rather than set directly on this
+          // wrapper) so StyledMenuCard - the element that actually has the
+          // rounded corners/shadow/scroll - can use it, since the card is a
+          // child of this floating wrapper, not the wrapper itself.
+          elements.floating.style.setProperty('--dropdown-available-height', `${Math.max(200, availableHeight)}px`);
+        },
+      }),
+    ],
+    whileElementsMounted: autoUpdate,
+  });
   const click = useClick(context);
   const dismiss = useDismiss(context);
   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss]);
@@ -137,11 +159,22 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const planInfo = getPlanInfo();
   const menuItems = getMenuItems();
 
+  // Built from raw x/y (not @floating-ui/react's floatingStyles helper)
+  // because floatingStyles positions via `transform`, which would clobber
+  // the scale/slide entrance transform already defined on this element.
+  const desktopPositionStyle: React.CSSProperties | undefined =
+    !isMobile && x != null && y != null ? { position: strategy, top: y, left: x } : undefined;
+
   const menuContent = (
     <FloatingPortal>
       <StyledBackdrop $isOpen={isOpen} onClick={() => setIsOpen(false)} aria-hidden="true" />
 
-      <StyledDropdownMenu $isOpen={isOpen} ref={refs.setFloating} {...getFloatingProps()}>
+      <StyledDropdownMenu
+        $isOpen={isOpen}
+        ref={refs.setFloating}
+        style={desktopPositionStyle}
+        {...getFloatingProps()}
+      >
         <StyledMenuCard
           className="menu-card"
           $theme={theme}
@@ -340,9 +373,11 @@ const StyledBackdrop = styled.div<{ $isOpen: boolean }>`
 `;
 
 const StyledDropdownMenu = styled.div<{ $isOpen: boolean }>`
+  /* top/left come from @floating-ui/react's inline style on desktop (see the
+     style prop where this is rendered) - not hardcoded here, since a fixed
+     \`right: 0\` alongside floating-ui's computed \`left\` would stretch this
+     element to fill the gap between them instead of sizing to content. */
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
   opacity: ${props => props.$isOpen ? 1 : 0};
   visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
   transform: ${props => props.$isOpen ? 'translateY(0) scale(1)' : 'translateY(-20px) scale(0.95)'};
@@ -374,6 +409,8 @@ const StyledMenuCard = styled.div<{ $theme: Theme; $glow: string; $planInfo: Use
   backdrop-filter: blur(20px);
   position: relative;
   z-index: 2;
+  max-height: var(--dropdown-available-height, 80vh);
+  overflow-y: auto;
 
   @media (max-width: 640px) {
     /* Positioned with \`bottom\` (not \`transform\`) so this never becomes a

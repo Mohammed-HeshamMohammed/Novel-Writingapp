@@ -101,7 +101,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     <nav
       className={`lg:hidden fixed bottom-0 inset-x-0 z-50 border-t ${styles.nav} pb-[env(safe-area-inset-bottom)]`}
     >
-      <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+      <div className="flex items-stretch h-16 px-2">
         {tier.left.map(renderItem)}
 
         <div className="flex-1 flex items-center justify-center">
